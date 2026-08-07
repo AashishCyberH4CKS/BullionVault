@@ -1,0 +1,113 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Fallback theme defaults (Gold) */
+    --accent-color: #FFD700;
+    --accent-glow: rgba(255, 215, 0, 0.4);
+    --accent-muted: rgba(255, 215, 0, 0.1);
+    --accent-gradient: linear-gradient(135deg, #FFE259 0%, #FFA751 100%);
+  }
+
+  body {
+    @apply bg-[#0B0F19] text-gray-100 font-sans;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(17, 24, 39, 0.8) 0, transparent 50%),
+      radial-gradient(at 50% 0%, var(--accent-muted) 0, transparent 50%);
+    background-attachment: fixed;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-gray-900/60 backdrop-blur-md border border-white/5 rounded-2xl transition-all duration-500 ease-out;
+  }
+  
+  .glass-card-hover {
+    transition: all 0.5s ease-out;
+  }
+  .glass-card-hover:hover {
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 25px -5px var(--accent-glow);
+    transform: translateY(-0.25rem);
+  }
+
+  .luxury-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    background: var(--accent-gradient);
+    color: #0b0f19;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 14px 0 var(--accent-glow);
+    cursor: pointer;
+  }
+  .luxury-button:hover {
+    box-shadow: 0 6px 20px 0 var(--accent-glow);
+    transform: translateY(-0.125rem);
+  }
+  .luxury-button:active {
+    transform: translateY(0);
+  }
+
+  .luxury-button-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+  .luxury-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  .luxury-button-secondary:active {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  .accent-border {
+    border-color: var(--accent-color);
+  }
+
+  .accent-text {
+    color: var(--accent-color);
+  }
+
+  .accent-bg {
+    background-color: var(--accent-color);
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0F19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
