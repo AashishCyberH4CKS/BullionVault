@@ -133,6 +133,10 @@ const getMarketOverview = async (req, res) => {
         filter.purity = '999 (Fine Platinum)';
         filter.weight = 10;
         filter.state = 'All India (national average)';
+      } else if (comm.code === 'copper') {
+        filter.purity = 'Standard Grade';
+        filter.weight = 1000;
+        filter.state = 'National';
       } else if (comm.code === 'crudeoil') {
         filter.purity = 'INR per Barrel';
         filter.state = 'All India (Indian Basket, national benchmark)';
@@ -197,6 +201,8 @@ const getMarketInsights = async (req, res) => {
         filter.purity = '999 (Fine Silver)'; filter.weight = 10; filter.state = 'National';
       } else if (code === 'platinum') {
         filter.purity = '999 (Fine Platinum)'; filter.weight = 10; filter.state = 'All India (national average)';
+      } else if (code === 'copper') {
+        filter.purity = 'Standard Grade'; filter.weight = 1000; filter.state = 'National';
       } else if (code === 'crudeoil') {
         filter.purity = 'INR per Barrel'; filter.state = 'All India (Indian Basket, national benchmark)';
       }
@@ -291,15 +297,17 @@ const getCommodityAnalytics = async (req, res) => {
     }
 
     // Default filters
-    let searchState = state || (code === 'gold' || code === 'silver' ? 'National' : 
+    let searchState = state || (code === 'gold' || code === 'silver' || code === 'copper' ? 'National' : 
                         code === 'platinum' ? 'All India (national average)' : 
                         'All India (Indian Basket, national benchmark)');
     let searchPurity = purity || (code === 'gold' ? '24K' : 
                             code === 'silver' ? '999 (Fine Silver)' : 
                             code === 'platinum' ? '999 (Fine Platinum)' : 
+                            code === 'copper' ? 'Standard Grade' :
                             'INR per Barrel');
     let searchWeight = weight ? Number(weight) : 10;
     if (code === 'crudeoil') searchWeight = 1;
+    if (code === 'copper') searchWeight = 1000;
 
     // 1. Get complete historical trend line for this selection
     const priceHistory = await HistoricalPrice.find({

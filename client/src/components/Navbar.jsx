@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../hooks/useTheme';
 import { Menu, X, ArrowRight, User } from 'lucide-react';
+import { UserButton } from '@clerk/clerk-react';
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -92,13 +93,16 @@ const Navbar = () => {
         {/* Action Buttons */}
         <div className="hidden lg:flex items-center space-x-4">
           {user ? (
-            <button 
-              onClick={() => navigate('/dashboard')} 
-              className="luxury-button py-2 px-5 text-xs flex items-center space-x-1.5"
-            >
-              <User size={14} />
-              <span>Investment Terminal</span>
-            </button>
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => navigate('/dashboard')} 
+                className="luxury-button py-2 px-5 text-xs flex items-center space-x-1.5"
+              >
+                <User size={14} />
+                <span>Investment Terminal</span>
+              </button>
+              <UserButton afterSignOutUrl="/" />
+            </div>
           ) : (
             <>
               <button 
@@ -144,12 +148,15 @@ const Navbar = () => {
 
           <div className="border-t border-white/5 pt-4 flex flex-col space-y-3">
             {user ? (
-              <button
-                onClick={() => { setMobileMenuOpen(false); navigate('/dashboard'); }}
-                className="w-full text-center luxury-button py-2.5 text-sm"
-              >
-                Go to Terminal
-              </button>
+              <div className="flex flex-col space-y-3 items-center">
+                <button
+                  onClick={() => { setMobileMenuOpen(false); navigate('/dashboard'); }}
+                  className="w-full text-center luxury-button py-2.5 text-sm"
+                >
+                  Go to Terminal
+                </button>
+                <UserButton afterSignOutUrl="/" />
+              </div>
             ) : (
               <>
                 <button

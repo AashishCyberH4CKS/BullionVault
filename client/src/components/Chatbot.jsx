@@ -88,6 +88,14 @@ const Chatbot = () => {
       return "Crude Oil Brent futures trade at approximately $6,848.4 per Barrel (Q2 2026).";
     }
 
+    if (q.includes('copper price') || q.includes('copper rate') || q.includes('rate of copper')) {
+      const rate = rates.copper;
+      if (rate) {
+        return `The latest recorded spot rate for Copper is ₹${rate.latestPrice.toLocaleString()} per ${rate.unit} (${rate.quarter}). The QoQ trend is ${rate.qoqChangePercent >= 0 ? 'up' : 'down'} by ${rate.qoqChangePercent}%.`;
+      }
+      return "The current market rate for Copper is approximately ₹750 per Kilogram (Q2 2026).";
+    }
+
     // Calculator / ROI
     if (q.includes('roi') || q.includes('return') || q.includes('calculate')) {
       return "You can use the 'Investment ROI Calculator' in the sidebar panel. It allows you to simulate acquisition costs, calculate returns over different years, and compare yield values directly against typical bank Fixed Deposits (FDs).";
@@ -117,7 +125,7 @@ const Chatbot = () => {
       return "The 'Admin Console' allows uploading spreadsheets (.xlsx) to update the database. If you have admin privileges, you can upload new files and view real-time system logs.";
     }
 
-    return "I can fetch live prices for Gold, Silver, Platinum or Crude Oil, explain dashboard tools, and guide you through SGB or jewelry calculations. Ask me something specific like 'Gold rate today' or 'How SGB works'!";
+    return "I can fetch live prices for Gold, Silver, Platinum, Copper or Crude Oil, explain dashboard tools, and guide you through SGB or jewelry calculations. Ask me something specific like 'Gold rate today' or 'How SGB works'!";
   };
 
   const handleSend = (textToSend = input) => {

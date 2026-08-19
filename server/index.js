@@ -4,6 +4,7 @@ const cors = require('cors');
 const path = require('path');
 const connectDB = require('./config/db');
 const { runImportEngine } = require('./services/importEngine');
+const { startLivePriceService } = require('./services/livePriceService');
 const SystemLog = require('./models/SystemLog');
 
 const app = express();
@@ -16,11 +17,15 @@ connectDB().then(async () => {
   try {
     const importResults = await runImportEngine();
     console.log(`Startup import succeeded: Processed ${importResults.length} workbooks.`);
+    
+    // Initialize Live Price Service to seed copper and fetch real-time prices
+    await startLivePriceService();
+    console.log('Live Price Service initialized.');
   } catch (error) {
-    console.error('Import Engine failed on startup:', error.message);
+    console.error('Import Engine / Live Price Service failed on startup:', error.message);
     await SystemLog.create({
       type: 'error',
-      message: 'Failed to run Import Engine on server startup',
+      message: 'Failed to run Import Engine / Live Price Service on server startup',
       details: error.message
     });
   }

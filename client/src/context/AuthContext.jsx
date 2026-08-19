@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useAuth as useClerkAuth, useUser as useClerkUser, useClerk } from '@clerk/clerk-react';
 import { authService } from '../services/api';
 
 const AuthContext = createContext();
@@ -6,15 +7,26 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { isLoaded, userId, getToken } = useClerkAuth();
+  const { user: clerkUser } = useClerkUser();
+  const { signOut } = useClerk();
 
   const checkAuthStatus = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+    if (!isLoaded) return;
+
     try {
+      if (!userId) {
+        localStorage.removeItem('token');
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      // Retrieve Clerk token and store in localStorage for axios interceptor
+      const token = await getToken();
+      localStorage.setItem('token', token);
+
+      // Get profile from backend MongoDB
       const res = await authService.getProfile();
       if (res.success) {
         setUser(res.data);
@@ -23,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
       }
     } catch (err) {
-      console.error('Session validation failed:', err.message);
+      console.error('Clerk session validation failed:', err.message);
       localStorage.removeItem('token');
       setUser(null);
     } finally {
@@ -33,55 +45,54 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     checkAuthStatus();
-  }, []);
+  }, [isLoaded, userId, clerkUser]);
 
-  const login = async (credentials) => {
-    setLoading(true);
-    try {
-      const res = await authService.login(credentials);
-      if (res.success) {
-        setUser(res.data);
-        return res;
-      }
-    } catch (err) {
-      setLoading(false);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const login = async () => {
+    // Auth handled by Clerk components
   };
 
-  const register = async (userInfo) => {
-    setLoading(true);
-    try {
-      const res = await authService.register(userInfo);
-      if (res.success) {
-        setUser(res.data);
-        return res;
-      }
-    } catch (err) {
-      setLoading(false);
-      throw err;
-    } finally {
-      setLoading(false);
-    }
+  const register = async () => {
+    // Auth handled by Clerk components
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Error signing out from Clerk:", err.message);
+    }
+    localStorage.removeItem('token');
     setUser(null);
   };
 
   const updateProfile = async (profileData) => {
     try {
-      const res = await authService.updateProfile(profileData);
+      // Update name and other settings in backend MongoDB
+      const res = await authService.updateProfile({
+        name: profileData.name,
+        settings: profileData.settings
+      });
+
       if (res.success) {
-        // Keep role, tokens, etc.
         setUser(prev => ({
           ...prev,
           name: res.data.name,
           settings: res.data.settings
         }));
+
+        // Also update name in Clerk user profile if available
+        if (clerkUser) {
+          try {
+            const firstName = profileData.name.split(' ')[0] || '';
+            const lastName = profileData.name.split(' ').slice(1).join(' ') || '';
+            await clerkUser.update({
+              firstName,
+              lastName
+            });
+          } catch (clerkErr) {
+            console.warn("Failed to sync name back to Clerk profile:", clerkErr.message);
+          }
+        }
         return res;
       }
     } catch (err) {
@@ -90,7 +101,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, checkAuthStatus }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, checkAuthStatus, supabase: null }}>
       {children}
     </AuthContext.Provider>
   );

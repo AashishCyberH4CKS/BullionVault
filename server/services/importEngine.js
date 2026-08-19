@@ -65,6 +65,12 @@ const THEME_MAP = {
     bgGradient: 'linear-gradient(135deg, #111 0%, #431407 100%)',
     chartColor: '#EA580C',
     glowColor: 'rgba(249, 115, 22, 0.4)'
+  },
+  copper: {
+    color: '#B87333',
+    bgGradient: 'linear-gradient(135deg, #111 0%, #3B2314 100%)',
+    chartColor: '#B87333',
+    glowColor: 'rgba(184, 115, 51, 0.4)'
   }
 };
 

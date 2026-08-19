@@ -24,6 +24,8 @@ const getWatchlist = async (req, res) => {
         filter.purity = '999 (Fine Silver)'; filter.weight = 10; filter.state = 'National';
       } else if (code === 'platinum') {
         filter.purity = '999 (Fine Platinum)'; filter.weight = 10; filter.state = 'All India (national average)';
+      } else if (code === 'copper') {
+        filter.purity = 'Standard Grade'; filter.weight = 1000; filter.state = 'National';
       } else if (code === 'crudeoil') {
         filter.purity = 'INR per Barrel'; filter.state = 'All India (Indian Basket, national benchmark)';
       }

@@ -30,6 +30,13 @@ const THEMES = {
     glow: 'rgba(249, 115, 22, 0.4)',
     muted: 'rgba(249, 115, 22, 0.05)',
     gradient: 'linear-gradient(135deg, #F97316 0%, #B45309 100%)'
+  },
+  copper: {
+    name: 'Industrial Bronze',
+    color: '#B87333',
+    glow: 'rgba(184, 115, 51, 0.4)',
+    muted: 'rgba(184, 115, 51, 0.05)',
+    gradient: 'linear-gradient(135deg, #E58E49 0%, #783F1A 100%)'
   }
 };
 

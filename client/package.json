@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.9",
     "axios": "^1.7.2",
     "chart.js": "^4.4.3",
     "framer-motion": "^11.3.8",
