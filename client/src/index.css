@@ -137,3 +137,179 @@
 ::-webkit-scrollbar-thumb:hover {
   background: var(--accent-color);
 }
+
+/* ========================================================
+   Clerk Auth & Email Verification Code (OTP) Styling
+   Ensures high-contrast, crystal-clear visibility in dark mode
+======================================================== */
+
+/* Group container for OTP boxes */
+.cl-otpCodeField,
+.cl-otpCodeFieldInputs {
+  display: flex !important;
+  gap: 0.625rem !important;
+  justify-content: center !important;
+  margin: 1rem 0 !important;
+}
+
+/* Individual OTP digit boxes */
+.cl-otpCodeFieldInput,
+.cl-otpCodeFieldInputs input,
+input[data-otp-input] {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border: 2px solid rgba(245, 158, 11, 0.45) !important;
+  border-radius: 0.75rem !important;
+  font-size: 1.35rem !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+  width: 3rem !important;
+  height: 3.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) inset !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  caret-color: #f59e0b !important;
+}
+
+/* Focused OTP box */
+.cl-otpCodeFieldInput:focus,
+.cl-otpCodeFieldInput:focus-visible,
+.cl-otpCodeFieldInput[data-focused="true"] {
+  border-color: #f59e0b !important;
+  background-color: #0f172a !important;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.35), 0 2px 8px rgba(0, 0, 0, 0.4) inset !important;
+  outline: none !important;
+}
+
+/* Filled OTP box with digits typed in */
+.cl-otpCodeFieldInput:not(:placeholder-shown),
+.cl-otpCodeFieldInput[value]:not([value=""]) {
+  color: #fef08a !important; /* Bright crisp gold / yellow */
+  border-color: #f59e0b !important;
+  background-color: #1e293b !important;
+  text-shadow: 0 0 8px rgba(245, 158, 11, 0.5) !important;
+}
+
+/* Autofill dark mode styling */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #1e293b inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  caret-color: #f59e0b !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Standard Clerk text inputs */
+.cl-formFieldInput[type="text"],
+.cl-formFieldInput[type="password"],
+.cl-formFieldInput[type="email"],
+.cl-formFieldInput[type="number"],
+.cl-formFieldInput {
+  background-color: #1e293b !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  font-weight: 500 !important;
+}
+
+.cl-formFieldInput:focus {
+  border-color: #f59e0b !important;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.25) !important;
+}
+
+/* User's target email subtitle on verify step */
+.cl-identityPreview {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.5rem 0.75rem !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.cl-identityPreviewText {
+  color: #f1f5f9 !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+}
+
+.cl-identityPreviewEditButton {
+  color: #f59e0b !important;
+}
+
+.cl-identityPreviewEditButton:hover {
+  color: #fbbf24 !important;
+}
+
+/* "Didn't receive a code? Resend" link */
+.cl-formResendCodeLink {
+  color: #f59e0b !important;
+  font-weight: 600 !important;
+  font-size: 0.8rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.cl-formResendCodeLink:hover {
+  color: #fef08a !important;
+  text-decoration: underline !important;
+}
+
+/* Resend timer text */
+.cl-formFieldRow__otpCode,
+.cl-otpCodeFieldInputs + div,
+.cl-formResendCodeLink + span {
+  color: #94a3b8 !important;
+  font-size: 0.8rem !important;
+}
+
+/* Clerk UserButton Popover Dark Theme & High Contrast Fix */
+.cl-userButtonPopoverCard {
+  background-color: #0F172A !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+}
+
+.cl-userButtonPopoverActionButton,
+.cl-userButtonPopoverActionButtonText,
+.cl-userButtonPopoverActionButtonIcon,
+.cl-userButtonPopoverCustomItemButton {
+  color: #FFFFFF !important;
+  fill: #FFFFFF !important;
+}
+
+.cl-userButtonPopoverActionButton svg,
+.cl-userButtonPopoverActionButtonIcon svg {
+  color: #FFFFFF !important;
+  stroke: #FFFFFF !important;
+  fill: none !important;
+}
+
+.cl-userButtonPopoverActionButton:hover,
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonText,
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon {
+  color: #F59E0B !important;
+  fill: #F59E0B !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.cl-userButtonPopoverActionButton:hover svg,
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon svg {
+  color: #F59E0B !important;
+  stroke: #F59E0B !important;
+}
+
+.cl-userPreviewMainIdentifier {
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+}
+
+.cl-userPreviewSecondaryIdentifier {
+  color: #94A3B8 !important;
+}
+
+.cl-userButtonPopoverFooter {
+  border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
+  background-color: rgba(15, 23, 42, 0.8) !important;
+}
+
+

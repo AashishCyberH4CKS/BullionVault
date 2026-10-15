@@ -7,18 +7,39 @@ const reportSchema = new mongoose.Schema({
     required: true,
     index: true,
   },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: false,
+    index: true,
+  },
   name: {
     type: String,
     required: true,
   },
   type: {
     type: String,
-    enum: ['portfolio', 'investment', 'historical', 'analytics'],
+    enum: [
+      'portfolio',
+      'portfolio_valuation',
+      'investment',
+      'historical',
+      'analytics',
+      'commodity_exposure',
+      'inventory_report',
+      'inventory',
+      'purchase_report',
+      'sales_report',
+      'pnl_report',
+      'risk_report',
+      'monthly_performance'
+    ],
     required: true,
   },
   format: {
     type: String,
-    enum: ['pdf', 'excel', 'csv'],
+    enum: ['official_printable', 'pdf', 'html', 'excel', 'xlsx', 'csv'],
+    default: 'official_printable',
     required: true,
   },
   parameters: {

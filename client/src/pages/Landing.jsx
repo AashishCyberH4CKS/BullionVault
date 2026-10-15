@@ -552,9 +552,12 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-4 gap-10">
           
           <div className="space-y-4">
-            <div className="flex items-center space-x-2.5">
-              <span className="text-xl">👑</span>
-              <span className="font-extrabold text-white text-base tracking-tight">BullionVault</span>
+            <div className="flex items-center">
+              <img 
+                src="/logo.png" 
+                alt="BullionVault Logo" 
+                className="h-8 w-auto"
+              />
             </div>
             <p className="text-[11px] text-gray-400 leading-relaxed font-light">
               An institutional asset intelligence terminal providing multi-dimensional commodity variance and ROI analytics.

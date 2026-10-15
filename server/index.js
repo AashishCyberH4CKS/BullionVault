@@ -21,6 +21,10 @@ connectDB().then(async () => {
     // Initialize Live Price Service to seed copper and fetch real-time prices
     await startLivePriceService();
     console.log('Live Price Service initialized.');
+
+    // Seed B2B SaaS demo data
+    const { seedB2BData } = require('./services/b2bSeeder');
+    await seedB2BData();
   } catch (error) {
     console.error('Import Engine / Live Price Service failed on startup:', error.message);
     await SystemLog.create({
@@ -48,6 +52,9 @@ app.use('/api/alerts', require('./routes/alertRoutes'));
 app.use('/api/watchlist', require('./routes/watchlistRoutes'));
 app.use('/api/reports', require('./routes/reportRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
+app.use('/api/inventory', require('./routes/inventoryRoutes'));
+app.use('/api/transactions', require('./routes/transactionRoutes'));
+app.use('/api/companies', require('./routes/companyRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : '');
+
 // Configure Axios Instance
 const api = axios.create({
-  baseURL: '/api', // Proxied via Vite config to http://localhost:5000/api
+  baseURL: import.meta.env.VITE_API_URL ? `${import.meta.env.VITE_API_URL}/api` : '/api',
   headers: {
     'Content-Type': 'application/json',
   },

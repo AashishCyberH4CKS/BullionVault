@@ -67,14 +67,13 @@ const Navbar = () => {
         {/* Brand Logo */}
         <div 
           onClick={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); navigate('/'); }}
-          className="flex items-center space-x-2.5 cursor-pointer select-none group"
+          className="flex items-center cursor-pointer select-none group"
         >
-          <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-luxury group-hover:scale-105 transition-transform duration-300">
-            <span className="text-lg font-bold text-slate-950">👑</span>
-          </div>
-          <span className="text-md font-bold tracking-tight bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent group-hover:text-white transition-colors">
-            BullionVault
-          </span>
+          <img 
+            src="/logo.png" 
+            alt="BullionVault Logo" 
+            className="h-10 w-auto group-hover:scale-105 transition-transform duration-300"
+          />
         </div>
 
         {/* Desktop Navigation Links */}
@@ -101,7 +100,20 @@ const Navbar = () => {
                 <User size={14} />
                 <span>Investment Terminal</span>
               </button>
-              <UserButton afterSignOutUrl="/" />
+              <UserButton 
+                afterSignOutUrl="/" 
+                appearance={{
+                  elements: {
+                    userButtonPopoverCard: "!bg-[#0F172A] !border !border-white/10 !text-white shadow-2xl",
+                    userButtonPopoverActionButton: "!text-white hover:!bg-white/10 hover:!text-amber-400 transition-colors",
+                    userButtonPopoverActionButtonText: "!text-white !font-medium hover:!text-amber-400",
+                    userButtonPopoverActionButtonIcon: "!text-white hover:!text-amber-400",
+                    userButtonPopoverFooter: "!bg-slate-900/60 !border-t !border-white/10",
+                    userPreviewMainIdentifier: "!text-white !font-semibold",
+                    userPreviewSecondaryIdentifier: "!text-slate-400"
+                  }
+                }}
+              />
             </div>
           ) : (
             <>
@@ -155,7 +167,20 @@ const Navbar = () => {
                 >
                   Go to Terminal
                 </button>
-                <UserButton afterSignOutUrl="/" />
+                <UserButton 
+                  afterSignOutUrl="/" 
+                  appearance={{
+                    elements: {
+                      userButtonPopoverCard: "!bg-[#0F172A] !border !border-white/10 !text-white shadow-2xl",
+                      userButtonPopoverActionButton: "!text-white hover:!bg-white/10 hover:!text-amber-400 transition-colors",
+                      userButtonPopoverActionButtonText: "!text-white !font-medium hover:!text-amber-400",
+                      userButtonPopoverActionButtonIcon: "!text-white hover:!text-amber-400",
+                      userButtonPopoverFooter: "!bg-slate-900/60 !border-t !border-white/10",
+                      userPreviewMainIdentifier: "!text-white !font-semibold",
+                      userPreviewSecondaryIdentifier: "!text-slate-400"
+                    }
+                  }}
+                />
               </div>
             ) : (
               <>

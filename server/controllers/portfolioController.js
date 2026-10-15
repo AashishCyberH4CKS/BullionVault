@@ -19,7 +19,10 @@ const getLatestPrice = async (investment) => {
 // @access  Private
 const getInvestments = async (req, res) => {
   try {
-    const investments = await Investment.find({ userId: req.user.id }).populate('commodityId');
+    const query = req.user.companyId 
+      ? { companyId: req.user.companyId } 
+      : { userId: req.user.id };
+    const investments = await Investment.find(query).populate('commodityId');
     const investmentsWithCurrentPrice = [];
 
     for (const inv of investments) {
@@ -57,6 +60,7 @@ const addInvestment = async (req, res) => {
 
     const investment = await Investment.create({
       userId: req.user.id,
+      companyId: req.user.companyId,
       commodityId,
       commodityCode: commodity.code,
       state,
@@ -88,9 +92,12 @@ const deleteInvestment = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Investment not found' });
     }
 
-    // Ensure user owns investment
-    if (investment.userId.toString() !== req.user.id) {
-      return res.status(401).json({ success: false, message: 'Not authorized' });
+    // Ensure user owns investment or belongs to same organization
+    const isOwner = investment.userId && investment.userId.toString() === req.user.id;
+    const isSameCompany = investment.companyId && req.user.companyId && investment.companyId.toString() === req.user.companyId.toString();
+
+    if (!isOwner && !isSameCompany) {
+      return res.status(401).json({ success: false, message: 'Not authorized to modify this holding' });
     }
 
     await investment.deleteOne();
@@ -105,7 +112,10 @@ const deleteInvestment = async (req, res) => {
 // @access  Private
 const getPortfolioStats = async (req, res) => {
   try {
-    const investments = await Investment.find({ userId: req.user.id });
+    const query = req.user.companyId 
+      ? { companyId: req.user.companyId } 
+      : { userId: req.user.id };
+    const investments = await Investment.find(query);
 
     if (investments.length === 0) {
       return res.json({

@@ -116,10 +116,44 @@ const uploadExcel = async (req, res) => {
   }
 };
 
+// @desc    Update user profile/role (admin only)
+// @route   PUT /api/admin/users/:id
+// @access  Private/Admin
+const updateUser = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const { role, name } = req.body;
+    user.role = role || user.role;
+    user.name = name || user.name;
+
+    const updatedUser = await user.save();
+
+    await SystemLog.create({
+      type: 'admin',
+      message: `Admin updated user profile: ${updatedUser.email}`,
+      details: {
+        userId: req.user.id,
+        userName: req.user.name,
+        targetUser: updatedUser.email,
+        targetRole: updatedUser.role
+      }
+    });
+
+    res.json({ success: true, data: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getUsers,
   getLogs,
   refreshDatabase,
   deleteCommodityData,
-  uploadExcel
+  uploadExcel,
+  updateUser
 };

@@ -24,15 +24,28 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    // First user is Admin (for testing convenience), subsequent are regular users
+    // First user is super_admin, subsequent are company_admin
     const userCount = await User.countDocuments({});
-    const role = userCount === 0 ? 'admin' : 'user';
+    const role = userCount === 0 ? 'super_admin' : 'company_admin';
+
+    const Company = require('../models/Company');
+    let defaultCompany = await Company.findOne({ name: 'Atlas Bullion & Commodities Pvt. Ltd.' });
+    if (!defaultCompany) {
+      defaultCompany = await Company.create({
+        name: 'Atlas Bullion & Commodities Pvt. Ltd.',
+        industry: 'Bullion Trading & Asset Management',
+        country: 'India',
+        currency: 'INR',
+        contactInfo: 'support@atlasbullion.com'
+      });
+    }
 
     const user = await User.create({
       name,
       email,
       password,
-      role
+      role,
+      companyId: defaultCompany._id
     });
 
     if (user) {

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const systemLogSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['import', 'auth', 'admin', 'system', 'error'],
+    enum: ['import', 'auth', 'admin', 'system', 'error', 'audit'],
     required: true,
     index: true,
   },

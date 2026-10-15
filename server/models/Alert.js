@@ -1,39 +1,50 @@
 const mongoose = require('mongoose');
 
 const alertSchema = new mongoose.Schema({
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: false,
+    index: true,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true,
     index: true,
   },
+  category: {
+    type: String,
+    enum: ['price_threshold', 'price_movement', 'inventory_stock', 'portfolio_loss', 'portfolio_concentration'],
+    default: 'price_threshold',
+    required: true,
+  },
   commodityId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Commodity',
-    required: true,
+    required: false,
   },
   commodityCode: {
     type: String,
-    required: true,
+    required: false,
   },
   state: {
     type: String,
-    required: true,
+    required: false,
   },
   purity: {
     type: String,
-    required: true,
+    required: false,
   },
   weight: {
     type: Number,
-    required: true,
+    required: false,
   },
-  type: {
+  type: { // For price alerts: 'above' / 'below'
     type: String,
-    enum: ['above', 'below'],
-    required: true,
+    required: false,
   },
-  thresholdPrice: {
+  thresholdValue: { // Can be price limit, % change, stock count limit, loss limit, concentration %
     type: Number,
     required: true,
   },
@@ -44,6 +55,9 @@ const alertSchema = new mongoose.Schema({
   triggeredAt: {
     type: Date,
   },
+  message: {
+    type: String,
+  }
 }, {
   timestamps: true,
 });

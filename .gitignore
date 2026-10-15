@@ -16,9 +16,11 @@ build/
 .env.production.local
 server/.env
 
-# Uploads directory (keep folder but ignore contents)
+# Uploads & Reports directories (keep folder but ignore generated contents)
 uploads/*
 !uploads/.gitkeep
+reports/*
+!reports/.gitkeep
 
 # Operating system files
 .DS_Store

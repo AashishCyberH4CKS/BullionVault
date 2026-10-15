@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth as useClerkAuth, useUser as useClerkUser, useClerk } from '@clerk/clerk-react';
-import { authService } from '../services/api';
+import api, { authService } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -47,6 +47,32 @@ export const AuthProvider = ({ children }) => {
     checkAuthStatus();
   }, [isLoaded, userId, clerkUser]);
 
+  // Dynamically attach Clerk token to all outgoing axios requests
+  useEffect(() => {
+    if (!isLoaded || !userId) return;
+
+    const interceptor = api.interceptors.request.use(
+      async (config) => {
+        try {
+          const token = await getToken();
+          if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
+        } catch (err) {
+          console.error('Failed to attach Clerk token to request:', err);
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      api.interceptors.request.eject(interceptor);
+    };
+  }, [isLoaded, userId, getToken]);
+
   const login = async () => {
     // Auth handled by Clerk components
   };
@@ -55,14 +81,25 @@ export const AuthProvider = ({ children }) => {
     // Auth handled by Clerk components
   };
 
-  const logout = async () => {
+  const logout = async (options = { redirectUrl: '/login' }) => {
     try {
-      await signOut();
+      localStorage.removeItem('token');
+      localStorage.clear();
+      setUser(null);
+      if (signOut) {
+        await signOut(options);
+      }
     } catch (err) {
       console.error("Error signing out from Clerk:", err.message);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.clear();
+      setUser(null);
+      const targetUrl = options?.redirectUrl || '/login';
+      if (window.location.pathname !== targetUrl) {
+        window.location.href = targetUrl;
+      }
     }
-    localStorage.removeItem('token');
-    setUser(null);
   };
 
   const updateProfile = async (profileData) => {

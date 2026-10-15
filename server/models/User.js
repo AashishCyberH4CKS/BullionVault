@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true,
     match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,})+$/,
       'Please add a valid email',
     ],
   },
@@ -36,8 +36,14 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['user', 'admin'],
-    default: 'user',
+    enum: ['super_admin', 'company_admin', 'portfolio_manager', 'trader', 'accountant', 'inventory_manager', 'viewer'],
+    default: 'viewer',
+  },
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: false,
+    index: true,
   },
   settings: {
     themePreference: {

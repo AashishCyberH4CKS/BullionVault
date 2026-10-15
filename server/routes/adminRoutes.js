@@ -5,7 +5,8 @@ const {
   getLogs,
   refreshDatabase,
   deleteCommodityData,
-  uploadExcel
+  uploadExcel,
+  updateUser
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -15,6 +16,7 @@ router.use(protect);
 router.use(admin);
 
 router.get('/users', getUsers);
+router.put('/users/:id', updateUser);
 router.get('/logs', getLogs);
 router.post('/refresh', refreshDatabase);
 router.delete('/commodities/:code', deleteCommodityData);

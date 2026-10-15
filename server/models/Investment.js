@@ -1,6 +1,12 @@
 const mongoose = require('mongoose');
 
 const investmentSchema = new mongoose.Schema({
+  companyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Company',
+    required: false,
+    index: true,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
