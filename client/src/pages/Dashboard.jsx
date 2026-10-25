@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../context/AuthContext';
+import { getFirestoreTransactions } from '../services/firestoreService';
 import { 
   TrendingUp, 
   Briefcase, 
@@ -15,7 +17,8 @@ import {
   Clock, 
   DollarSign, 
   FileText,
-  Percent
+  Percent,
+  Database
 } from 'lucide-react';
 
 const api = axios.create({
@@ -36,6 +39,7 @@ api.interceptors.request.use(async (config) => {
 const Dashboard = () => {
   const navigate = useNavigate();
   const { setCommodity } = useTheme();
+  const { firebaseUid } = useAuth();
   
   const [portfolioStats, setPortfolioStats] = useState(null);
   const [inventoryStats, setInventoryStats] = useState(null);
@@ -47,7 +51,7 @@ const Dashboard = () => {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const [portRes, invRes, txRes, alertRes, marketRes] = await Promise.all([
+      const [portRes, invRes, txRes, alertRes, marketRes] = await Promise.allSettled([
         api.get('/api/portfolio/stats'),
         api.get('/api/inventory/stats'),
         api.get('/api/transactions'),
@@ -55,11 +59,33 @@ const Dashboard = () => {
         api.get('/api/commodities/market/overview')
       ]);
 
-      if (portRes.data.success) setPortfolioStats(portRes.data.data);
-      if (invRes.data.success) setInventoryStats(invRes.data.data);
-      if (txRes.data.success) setTransactions(txRes.data.data);
-      if (alertRes.data.success) setAlerts(alertRes.data.data);
-      if (marketRes.data.success) setMarketOverview(marketRes.data.data);
+      if (portRes.status === 'fulfilled' && portRes.value.data.success) setPortfolioStats(portRes.value.data.data);
+      if (invRes.status === 'fulfilled' && invRes.value.data.success) setInventoryStats(invRes.value.data.data);
+      
+      let backendTxs = [];
+      if (txRes.status === 'fulfilled' && txRes.value.data.success) backendTxs = txRes.value.data.data;
+      if (alertRes.status === 'fulfilled' && alertRes.value.data.success) setAlerts(alertRes.value.data.data);
+      if (marketRes.status === 'fulfilled' && marketRes.value.data.success) setMarketOverview(marketRes.value.data.data);
+
+      // Load Firestore transactions
+      let fsTxs = [];
+      if (firebaseUid) {
+        try {
+          fsTxs = await getFirestoreTransactions(firebaseUid);
+        } catch (e) {}
+      }
+
+      // Merge and deduplicate
+      const txMap = new Map();
+      fsTxs.forEach(t => txMap.set(t.transactionId || t.id, t));
+      backendTxs.forEach(t => {
+        const key = t.transactionId || t._id;
+        if (!txMap.has(key)) txMap.set(key, t);
+      });
+
+      const mergedTxs = Array.from(txMap.values()).sort((a, b) => new Date(b.date) - new Date(a.date));
+      setTransactions(mergedTxs);
+
     } catch (err) {
       console.error('Failed to load B2B dashboard terminal metrics:', err.message);
     } finally {
@@ -69,7 +95,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [firebaseUid]);
 
   if (loading) {
     return (

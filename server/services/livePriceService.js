@@ -89,6 +89,80 @@ async function seedCopper() {
 }
 
 /**
+ * Seeding Natural Gas commodity and historical baseline if not present.
+ */
+async function seedNaturalGas() {
+  try {
+    let gas = await Commodity.findOne({ code: 'naturalgas' });
+    if (!gas) {
+      console.log('Seeding Natural Gas commodity and baseline historical entries...');
+      
+      gas = new Commodity({
+        name: 'Natural Gas',
+        code: 'naturalgas',
+        fileName: 'Live API',
+        accentTheme: {
+          color: '#06B6D4',
+          bgGradient: 'linear-gradient(135deg, #111 0%, #083344 100%)',
+          chartColor: '#06B6D4',
+          glowColor: 'rgba(6, 182, 212, 0.4)'
+        },
+        purities: ['Pipeline Quality (Standard)'],
+        weights: [1, 10, 100],
+        states: ['National'],
+        regions: ['National']
+      });
+      await gas.save();
+
+      const baselinePrices = [
+        { quarter: 'Q1 2025', year: 2025, quarterNum: 1, price: 235 },
+        { quarter: 'Q2 2025', year: 2025, quarterNum: 2, price: 248 },
+        { quarter: 'Q3 2025', year: 2025, quarterNum: 3, price: 240 },
+        { quarter: 'Q4 2025', year: 2025, quarterNum: 4, price: 260 },
+        { quarter: 'Q1 2026', year: 2026, quarterNum: 1, price: 275 },
+        { quarter: 'Q2 2026', year: 2026, quarterNum: 2, price: 288 }
+      ];
+
+      for (let i = 0; i < baselinePrices.length; i++) {
+        const bp = baselinePrices[i];
+        const prevPrice = i > 0 ? baselinePrices[i - 1].price : bp.price;
+        const change = bp.price - prevPrice;
+        const pct = prevPrice > 0 ? (change / prevPrice) * 100 : 0;
+
+        for (const w of gas.weights) {
+          const scaledPrice = bp.price * w;
+          const scaledChange = change * w;
+
+          await HistoricalPrice.create({
+            commodityId: gas._id,
+            commodityCode: 'naturalgas',
+            state: 'National',
+            region: 'National',
+            quarter: bp.quarter,
+            year: bp.year,
+            quarterNum: bp.quarterNum,
+            purity: 'Pipeline Quality (Standard)',
+            weight: w,
+            price: Number(scaledPrice.toFixed(2)),
+            qoqChange: Number(scaledChange.toFixed(2)),
+            qoqChangePercent: Number(pct.toFixed(2)),
+            trend: pct >= 0 ? 'Upward' : 'Downward'
+          });
+        }
+      }
+
+      await SystemLog.create({
+        type: 'import',
+        message: 'Successfully seeded Natural Gas baseline records'
+      });
+      console.log('Natural Gas seeding complete.');
+    }
+  } catch (error) {
+    console.error('Error seeding Natural Gas:', error.message);
+  }
+}
+
+/**
  * Main function to fetch live prices and update database.
  */
 async function fetchAndUpdateLivePrices() {
@@ -364,6 +438,7 @@ async function fetchAndUpdateLivePrices() {
  */
 async function startLivePriceService() {
   await seedCopper();
+  await seedNaturalGas();
   
   // Fetch immediately on boot
   try {

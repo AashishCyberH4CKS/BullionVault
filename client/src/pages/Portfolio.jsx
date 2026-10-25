@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../context/AuthContext';
 import { 
   Plus, 
   Trash2, 
@@ -17,9 +18,17 @@ import {
   Percent,
   CheckCircle,
   XCircle,
-  Info
+  Info,
+  Database,
+  Flame
 } from 'lucide-react';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import { 
+  saveFirestoreHolding, 
+  getFirestoreHoldings, 
+  deleteFirestoreHolding, 
+  calculateFirestorePortfolioStats 
+} from '../services/firestoreService';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : ''),
@@ -38,6 +47,7 @@ api.interceptors.request.use(async (config) => {
 
 const Portfolio = () => {
   const { setCommodity } = useTheme();
+  const { firebaseUid } = useAuth();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'overview';
@@ -97,22 +107,63 @@ const Portfolio = () => {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [invRes, commRes, statsRes] = await Promise.all([
+      const [invRes, commRes, statsRes] = await Promise.allSettled([
         api.get('/api/portfolio'),
         api.get('/api/commodities'),
         api.get('/api/portfolio/stats')
       ]);
 
-      if (invRes.data.success) setInvestments(invRes.data.data);
-      if (commRes.data.success) {
-        setCommodities(commRes.data.data);
-        if (commRes.data.data.length > 0) {
-          setSelectedCommCode(commRes.data.data[0].code);
-          setSelectedCommId(commRes.data.data[0]._id);
+      let backendInvestments = [];
+      if (invRes.status === 'fulfilled' && invRes.value.data.success) {
+        backendInvestments = invRes.value.data.data;
+      }
+      if (commRes.status === 'fulfilled' && commRes.value.data.success) {
+        setCommodities(commRes.value.data.data);
+        if (commRes.value.data.data.length > 0) {
+          setSelectedCommCode(commRes.value.data.data[0].code);
+          setSelectedCommId(commRes.value.data.data[0]._id);
         }
       }
-      if (statsRes.data.success) {
-        setSummary(statsRes.data.data);
+      if (statsRes.status === 'fulfilled' && statsRes.value.data.success) {
+        setSummary(statsRes.value.data.data);
+      }
+
+      // Retrieve user's holdings directly from Cloud Firestore
+      let firestoreHoldings = [];
+      if (firebaseUid) {
+        try {
+          firestoreHoldings = await getFirestoreHoldings(firebaseUid);
+        } catch (fsErr) {
+          console.warn('Firestore getHoldings notice:', fsErr.message);
+        }
+      }
+
+      // Merge Firestore holdings and MongoDB holdings
+      const holdingsMap = new Map();
+      firestoreHoldings.forEach(h => {
+        const key = h.id || `${h.commodityCode}_${h.unit || h.weight}`;
+        holdingsMap.set(key, { ...h, source: 'firestore' });
+      });
+      backendInvestments.forEach(h => {
+        const key = h._id || `${h.commodityCode}_${h.weight}`;
+        if (!holdingsMap.has(key)) {
+          holdingsMap.set(key, { ...h, source: 'mongodb' });
+        }
+      });
+
+      const merged = Array.from(holdingsMap.values());
+      setInvestments(merged);
+
+      if (firestoreHoldings.length > 0) {
+        const stats = calculateFirestorePortfolioStats(merged);
+        setSummary(prev => ({
+          ...prev,
+          totalValue: stats.totalValue || prev.totalValue,
+          totalInvested: stats.totalInvested || prev.totalInvested,
+          totalProfit: stats.totalProfit !== undefined ? stats.totalProfit : prev.totalProfit,
+          roi: stats.roi !== undefined ? stats.roi : prev.roi,
+          allocations: stats.allocations && stats.allocations.length > 0 ? stats.allocations : prev.allocations
+        }));
       }
     } catch (err) {
       console.error('Failed to load portfolio:', err.message);
@@ -130,7 +181,19 @@ const Portfolio = () => {
     if (!holdingToDelete) return;
     try {
       setDeleteLoading(true);
-      await api.delete(`/api/portfolio/${holdingToDelete._id}`);
+
+      // Delete from Firestore
+      if (firebaseUid) {
+        try {
+          await deleteFirestoreHolding(firebaseUid, holdingToDelete._id || holdingToDelete.id);
+        } catch (fsErr) {}
+      }
+
+      // Delete from backend API
+      try {
+        await api.delete(`/api/portfolio/${holdingToDelete._id}`);
+      } catch (apiErr) {}
+
       setDeleteModalOpen(false);
       setHoldingToDelete(null);
       loadData();
@@ -143,7 +206,7 @@ const Portfolio = () => {
 
   useEffect(() => {
     loadData();
-  }, [activeTab]);
+  }, [activeTab, firebaseUid]);
 
   // Fetch filters whenever the selected commodity in the form changes
   useEffect(() => {
@@ -254,6 +317,7 @@ const Portfolio = () => {
 
       const postData = {
         commodityId: selectedCommId,
+        commodityCode: selectedCommCode || 'gold',
         state: formState.state,
         purity: formState.purity,
         weight: formState.weight,
@@ -264,13 +328,29 @@ const Portfolio = () => {
         purchasePrice: formState.purchasePrice
       };
 
-      const res = await api.post('/api/portfolio', postData);
-      if (res.data.success) {
-        setFormOpen(false);
-        loadData();
+      // 1. Persist directly to Cloud Firestore
+      if (firebaseUid) {
+        try {
+          await saveFirestoreHolding(firebaseUid, {
+            ...postData,
+            commodityName: commodities.find(c => c.code === selectedCommCode)?.name || selectedCommCode
+          });
+        } catch (fsErr) {
+          console.warn('Firestore holding save error:', fsErr.message);
+        }
       }
+
+      // 2. Persist to Backend API to maintain MongoDB sync
+      try {
+        await api.post('/api/portfolio', postData);
+      } catch (apiErr) {
+        console.info('Backend portfolio post response:', apiErr.message);
+      }
+
+      setFormOpen(false);
+      loadData();
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to register transaction.');
+      alert(err.response?.data?.message || err.message || 'Failed to register holding.');
     } finally {
       setSubmitting(false);
     }

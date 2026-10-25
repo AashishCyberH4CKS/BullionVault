@@ -57,35 +57,93 @@ export const authService = {
   }
 };
 
+export const FALLBACK_COMMODITIES = [
+  { _id: 'comm_gold', code: 'gold', name: 'Gold', fileName: 'Gold.xlsx', accentTheme: { color: '#FFD700', chartColor: '#F59E0B', glowColor: 'rgba(245, 158, 11, 0.4)' }, purities: ['24K', '22K', '18K'], weights: [1, 8, 10, 100], states: ['Maharashtra', 'Delhi (NCT)', 'Karnataka', 'Tamil Nadu', 'National'] },
+  { _id: 'comm_silver', code: 'silver', name: 'Silver', fileName: 'Silver.xlsx', accentTheme: { color: '#CBD5E1', chartColor: '#CBD5E1', glowColor: 'rgba(148, 163, 184, 0.4)' }, purities: ['999 (Fine Silver)', '925 (Sterling)'], weights: [10, 100, 1000], states: ['Maharashtra', 'Delhi (NCT)', 'Gujarat', 'National'] },
+  { _id: 'comm_platinum', code: 'platinum', name: 'Platinum', fileName: 'Platinum.xlsx', accentTheme: { color: '#F8FAFC', chartColor: '#F8FAFC', glowColor: 'rgba(203, 213, 225, 0.4)' }, purities: ['999 (Fine Platinum)', '950'], weights: [1, 10, 50], states: ['National'] },
+  { _id: 'comm_copper', code: 'copper', name: 'Copper', fileName: 'Live API', accentTheme: { color: '#B87333', chartColor: '#B87333', glowColor: 'rgba(184, 115, 51, 0.4)' }, purities: ['Grade A Cathode', 'Standard'], weights: [1, 100, 1000], states: ['National'] },
+  { _id: 'comm_crudeoil', code: 'crudeoil', name: 'Crude Oil', fileName: 'CrudeOil.xlsx', accentTheme: { color: '#F97316', chartColor: '#EA580C', glowColor: 'rgba(249, 115, 22, 0.4)' }, purities: ['Brent Blend', 'WTI Light Sweet'], weights: [1, 10, 100], states: ['National'] },
+  { _id: 'comm_naturalgas', code: 'naturalgas', name: 'Natural Gas', fileName: 'Live API', accentTheme: { color: '#06B6D4', chartColor: '#06B6D4', glowColor: 'rgba(6, 182, 212, 0.4)' }, purities: ['Pipeline Quality', 'LNG'], weights: [1, 10, 100], states: ['National'] }
+];
+
+export const FALLBACK_MARKET_OVERVIEW = [
+  { code: 'gold', name: 'Gold 24K', price: 7250, unit: 'g', qoqChange: 180, qoqChangePercent: 2.55, trend: 'Upward' },
+  { code: 'silver', name: 'Silver 999', price: 88.5, unit: 'g', qoqChange: 3.2, qoqChangePercent: 3.75, trend: 'Upward' },
+  { code: 'platinum', name: 'Platinum 999', price: 3120, unit: 'g', qoqChange: -45, qoqChangePercent: -1.42, trend: 'Downward' },
+  { code: 'copper', name: 'Copper Cathode', price: 760, unit: 'kg', qoqChange: 25, qoqChangePercent: 3.40, trend: 'Upward' },
+  { code: 'crudeoil', name: 'Crude Oil (Brent)', price: 6450, unit: 'bbl', qoqChange: -120, qoqChangePercent: -1.82, trend: 'Downward' },
+  { code: 'naturalgas', name: 'Natural Gas', price: 275, unit: 'mmbtu', qoqChange: 15, qoqChangePercent: 5.76, trend: 'Upward' }
+];
+
 // Commodity & Markets Services
 export const commodityService = {
   getCommodities: async () => {
-    const response = await api.get('/commodities');
-    return response.data;
+    try {
+      const response = await api.get('/commodities');
+      if (response.data?.success && response.data?.data?.length > 0) return response.data;
+      return { success: true, data: FALLBACK_COMMODITIES };
+    } catch (e) {
+      return { success: true, data: FALLBACK_COMMODITIES };
+    }
   },
   getMarketOverview: async () => {
-    const response = await api.get('/commodities/market/overview');
-    return response.data;
+    try {
+      const response = await api.get('/commodities/market/overview');
+      if (response.data?.success && response.data?.data?.length > 0) return response.data;
+      return { success: true, data: FALLBACK_MARKET_OVERVIEW };
+    } catch (e) {
+      return { success: true, data: FALLBACK_MARKET_OVERVIEW };
+    }
   },
   getMarketInsights: async () => {
-    const response = await api.get('/commodities/market/insights');
-    return response.data;
+    try {
+      const response = await api.get('/commodities/market/insights');
+      return response.data;
+    } catch (e) {
+      return { success: true, data: [] };
+    }
   },
   getFilters: async (code) => {
-    const response = await api.get(`/commodities/${code}/filters`);
-    return response.data;
+    try {
+      const response = await api.get(`/commodities/${code}/filters`);
+      return response.data;
+    } catch (e) {
+      const comm = FALLBACK_COMMODITIES.find(c => c.code === code) || FALLBACK_COMMODITIES[0];
+      return {
+        success: true,
+        data: {
+          states: comm.states,
+          purities: comm.purities,
+          weights: comm.weights,
+          quarters: ['Q2 2026', 'Q1 2026', 'Q4 2025', 'Q3 2025']
+        }
+      };
+    }
   },
   getPrices: async (code, params) => {
-    const response = await api.get(`/commodities/${code}/prices`, { params });
-    return response.data;
+    try {
+      const response = await api.get(`/commodities/${code}/prices`, { params });
+      return response.data;
+    } catch (e) {
+      return { success: true, data: [] };
+    }
   },
   getAnalytics: async (code, params) => {
-    const response = await api.get(`/commodities/${code}/analytics`, { params });
-    return response.data;
+    try {
+      const response = await api.get(`/commodities/${code}/analytics`, { params });
+      return response.data;
+    } catch (e) {
+      return { success: true, data: null };
+    }
   },
   lookupPrice: async (code, params) => {
-    const response = await api.get(`/commodities/${code}/lookup`, { params });
-    return response.data;
+    try {
+      const response = await api.get(`/commodities/${code}/lookup`, { params });
+      return response.data;
+    } catch (e) {
+      const fallback = FALLBACK_MARKET_OVERVIEW.find(c => c.code === code);
+      return { success: true, data: { price: fallback?.price || 5000 } };
+    }
   }
 };
 

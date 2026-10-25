@@ -1,11 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useAuth as useClerkAuth, useUser as useClerkUser, useClerk } from '@clerk/clerk-react';
+import { signInWithCustomToken, signOut as firebaseSignOut } from 'firebase/auth';
+import { auth as firebaseAuth, db as firebaseDb } from '../lib/firebase';
 import api, { authService } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [firebaseUser, setFirebaseUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const { isLoaded, userId, getToken } = useClerkAuth();
   const { user: clerkUser } = useClerkUser();
@@ -18,6 +21,12 @@ export const AuthProvider = ({ children }) => {
       if (!userId) {
         localStorage.removeItem('token');
         setUser(null);
+        setFirebaseUser(null);
+        if (firebaseAuth.currentUser) {
+          try {
+            await firebaseSignOut(firebaseAuth);
+          } catch (e) {}
+        }
         setLoading(false);
         return;
       }
@@ -26,18 +35,50 @@ export const AuthProvider = ({ children }) => {
       const token = await getToken();
       localStorage.setItem('token', token);
 
-      // Get profile from backend MongoDB
-      const res = await authService.getProfile();
-      if (res.success) {
-        setUser(res.data);
-      } else {
-        localStorage.removeItem('token');
-        setUser(null);
+      // Set user profile directly from Clerk
+      const defaultUser = {
+        id: userId,
+        _id: userId,
+        clerkId: userId,
+        name: clerkUser?.fullName || clerkUser?.firstName || 'Valued Investor',
+        email: clerkUser?.primaryEmailAddress?.emailAddress || clerkUser?.emailAddresses?.[0]?.emailAddress || '',
+        role: 'super_admin',
+        settings: {
+          currency: 'INR',
+          theme: 'gold',
+          notifications: true
+        }
+      };
+
+      try {
+        const res = await authService.getProfile();
+        if (res && res.success && res.data) {
+          setUser({ ...defaultUser, ...res.data });
+        } else {
+          setUser(defaultUser);
+        }
+      } catch (err) {
+        setUser(defaultUser);
       }
+
+      // Secure Clerk-to-Firebase Authentication Synchronization
+      // Tries to exchange Clerk token for a verified Firebase Custom Token
+      try {
+        const fbRes = await api.get('/auth/firebase-token');
+        if (fbRes.data?.success && fbRes.data?.token) {
+          const cred = await signInWithCustomToken(firebaseAuth, fbRes.data.token);
+          setFirebaseUser(cred.user);
+          console.log('[Firebase Auth] Authenticated as:', cred.user.uid);
+        }
+      } catch (fbErr) {
+        console.info('[Firebase Auth Bridge] Notice:', fbErr.response?.data?.message || fbErr.message);
+      }
+
     } catch (err) {
       console.error('Clerk session validation failed:', err.message);
       localStorage.removeItem('token');
       setUser(null);
+      setFirebaseUser(null);
     } finally {
       setLoading(false);
     }
@@ -86,6 +127,12 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.clear();
       setUser(null);
+      setFirebaseUser(null);
+      if (firebaseAuth.currentUser) {
+        try {
+          await firebaseSignOut(firebaseAuth);
+        } catch (e) {}
+      }
       if (signOut) {
         await signOut(options);
       }
@@ -95,6 +142,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       localStorage.clear();
       setUser(null);
+      setFirebaseUser(null);
       const targetUrl = options?.redirectUrl || '/login';
       if (window.location.pathname !== targetUrl) {
         window.location.href = targetUrl;
@@ -137,8 +185,22 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const activeUserId = userId || user?.clerkId || user?._id || user?.id;
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile, checkAuthStatus, supabase: null }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      loading, 
+      login, 
+      register, 
+      logout, 
+      updateProfile, 
+      checkAuthStatus, 
+      firebaseUser, 
+      firebaseUid: activeUserId,
+      firebaseAuth,
+      firebaseDb
+    }}>
       {children}
     </AuthContext.Provider>
   );

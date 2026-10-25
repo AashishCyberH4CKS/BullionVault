@@ -52,6 +52,10 @@ const transactionSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  fees: {
+    type: Number,
+    default: 0,
+  },
   totalValue: {
     type: Number,
     required: true,

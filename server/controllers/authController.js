@@ -177,10 +177,49 @@ const forgotPassword = async (req, res) => {
   }
 };
 
+// @desc    Generate Firebase custom token for authenticated user
+// @route   GET /api/auth/firebase-token
+// @access  Private
+const getFirebaseCustomToken = async (req, res) => {
+  try {
+    const userId = req.user.clerkId || req.user.id.toString();
+    const firebaseAdmin = require('../config/firebaseAdmin');
+
+    if (firebaseAdmin && typeof firebaseAdmin.createCustomToken === 'function') {
+      try {
+        const customToken = await firebaseAdmin.createCustomToken(userId, {
+          role: req.user.role,
+          companyId: req.user.companyId ? req.user.companyId.toString() : null
+        });
+        return res.json({
+          success: true,
+          token: customToken,
+          userId
+        });
+      } catch (adminErr) {
+        return res.status(503).json({
+          success: false,
+          message: 'Firebase Admin custom token unavailable: ' + adminErr.message,
+          userId
+        });
+      }
+    } else {
+      return res.status(503).json({
+        success: false,
+        message: 'Firebase Admin credentials not configured on server',
+        userId
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
   forgotPassword,
+  getFirebaseCustomToken,
 };

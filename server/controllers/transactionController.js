@@ -104,7 +104,7 @@ const createTransaction = async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized to log business transactions' });
     }
 
-    const { type, commodityId, quantity, unit, price, counterparty, invoiceNumber, location, notes, date } = req.body;
+    const { type, commodityId, quantity, unit, price, fees, counterparty, invoiceNumber, location, notes, date } = req.body;
 
     if (!type || !commodityId || !quantity || !unit || !price || !counterparty || !invoiceNumber || !location) {
       return res.status(400).json({ success: false, message: 'Please add all required fields' });
@@ -117,7 +117,9 @@ const createTransaction = async (req, res) => {
 
     const qty = Number(quantity);
     const prc = Number(price);
-    const totalValue = qty * prc;
+    const applicableFees = Number(fees || 0);
+    const subtotal = qty * prc;
+    const totalValue = type === 'purchase' ? subtotal + applicableFees : subtotal - applicableFees;
     const txId = 'TX-' + Math.floor(100000 + Math.random() * 900000);
 
     const transaction = await Transaction.create({
@@ -131,6 +133,7 @@ const createTransaction = async (req, res) => {
       quantity: qty,
       unit,
       price: prc,
+      fees: applicableFees,
       totalValue: Number(totalValue.toFixed(2)),
       counterparty,
       invoiceNumber,
