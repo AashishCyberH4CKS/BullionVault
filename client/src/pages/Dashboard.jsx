@@ -6,7 +6,8 @@ import { useAuth } from '../context/AuthContext';
 import { 
   getFirestoreTransactions, 
   getFirestoreHoldings, 
-  calculateFirestorePortfolioStats 
+  calculateFirestorePortfolioStats,
+  seedDemoPortfolioData
 } from '../services/firestoreService';
 import { 
   TrendingUp, 
@@ -22,7 +23,8 @@ import {
   DollarSign, 
   FileText,
   Percent,
-  Database
+  Database,
+  Sparkles
 } from 'lucide-react';
 
 const api = axios.create({
@@ -51,6 +53,7 @@ const Dashboard = () => {
   const [alerts, setAlerts] = useState([]);
   const [marketOverview, setMarketOverview] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [seeding, setSeeding] = useState(false);
 
   const loadDashboardData = async () => {
     try {
@@ -119,6 +122,19 @@ const Dashboard = () => {
     }
   };
 
+  const handleSeedDemoData = async () => {
+    if (!firebaseUid) return;
+    try {
+      setSeeding(true);
+      await seedDemoPortfolioData(firebaseUid);
+      await loadDashboardData();
+    } catch (err) {
+      console.error('Failed to seed starter portfolio:', err);
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   useEffect(() => {
     loadDashboardData();
   }, [firebaseUid]);
@@ -158,6 +174,17 @@ const Dashboard = () => {
           </p>
         </div>
         <div className="flex items-center space-x-2">
+          {(!portfolioStats || !portfolioStats.totalValue || portfolioStats.totalValue === 0) && (
+            <button
+              onClick={handleSeedDemoData}
+              disabled={seeding}
+              className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+              title="Populate starter bullion assets with Gold, Silver, Platinum, and Copper trades"
+            >
+              <Sparkles size={14} className={seeding ? 'animate-spin text-amber-400' : 'text-amber-400'} />
+              <span>{seeding ? 'Initializing Vault...' : 'Load Starter Portfolio'}</span>
+            </button>
+          )}
           <button
             onClick={() => navigate('/transactions?tab=purchases')}
             className="luxury-button py-2 px-4 text-xs flex items-center space-x-1.5"

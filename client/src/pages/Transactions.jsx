@@ -17,7 +17,8 @@ import {
   RefreshCw, 
   ShieldCheck,
   Flame,
-  Activity
+  Activity,
+  Sparkles
 } from 'lucide-react';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import { 
@@ -26,6 +27,7 @@ import {
   deleteFirestoreTransaction, 
   updateFirestoreTransaction, 
   subscribeFirestoreTransactions,
+  seedDemoPortfolioData,
   SUPPORTED_COMMODITIES 
 } from '../services/firestoreService';
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
@@ -83,6 +85,7 @@ const Transactions = () => {
   const [firestoreCount, setFirestoreCount] = useState(0);
   const [diagRunning, setDiagRunning] = useState(false);
   const [diagResult, setDiagResult] = useState(null);
+  const [seeding, setSeeding] = useState(false);
 
   // Delete modal state
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -305,6 +308,23 @@ const Transactions = () => {
     }
   };
 
+  const handleSeedDemoData = async () => {
+    if (!firebaseUid) {
+      alert('Please wait for user authentication to complete');
+      return;
+    }
+    try {
+      setSeeding(true);
+      await seedDemoPortfolioData(firebaseUid);
+      await loadData();
+    } catch (err) {
+      console.error('Failed to seed starter portfolio:', err);
+      alert('Failed to load starter portfolio: ' + (err.message || 'Unknown error'));
+    } finally {
+      setSeeding(false);
+    }
+  };
+
   const handleOpenAddModal = () => {
     setEditingTx(null);
     const firstComm = commodities[0] || DEFAULT_COMMODITIES[0];
@@ -458,6 +478,15 @@ const Transactions = () => {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleSeedDemoData}
+            disabled={seeding}
+            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center space-x-1.5 transition-all cursor-pointer disabled:opacity-50"
+            title="Populate starter bullion assets with Gold, Silver, Platinum, and Copper trades"
+          >
+            <Sparkles size={14} className={seeding ? 'animate-spin text-amber-400' : 'text-amber-400'} />
+            <span>{seeding ? 'Initializing Vault...' : 'Load Starter Portfolio'}</span>
+          </button>
           {canAddTx && (
             <button
               onClick={handleOpenAddModal}
@@ -620,8 +649,33 @@ const Transactions = () => {
               <tbody className="divide-y divide-white/5 text-xs">
                 {filteredTransactions.length === 0 ? (
                   <tr>
-                    <td colSpan={13} className="p-8 text-center text-gray-500">
-                      No investment transactions found. Click "Record Transaction" to persist your first trade.
+                    <td colSpan={13} className="p-12 text-center">
+                      <div className="max-w-md mx-auto flex flex-col items-center">
+                        <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 mb-3">
+                          <Receipt size={24} />
+                        </div>
+                        <h4 className="text-sm font-bold text-white mb-1">Your Portfolio Vault is Empty</h4>
+                        <p className="text-xs text-gray-400 mb-5 leading-relaxed">
+                          No transactions recorded yet for your personal account. You can record your first trade manually, or click below to load a verified starter portfolio with Gold, Silver, Platinum, and Copper trades.
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                          <button
+                            onClick={handleSeedDemoData}
+                            disabled={seeding}
+                            className="px-4 py-2.5 text-xs font-semibold rounded-lg bg-amber-500 hover:bg-amber-400 text-black flex items-center space-x-2 transition-all cursor-pointer shadow-lg shadow-amber-500/20 disabled:opacity-50"
+                          >
+                            <Sparkles size={14} className={seeding ? 'animate-spin' : ''} />
+                            <span>{seeding ? 'Initializing Bullion Vault...' : 'Load Starter Portfolio (Gold, Silver, Platinum, Copper)'}</span>
+                          </button>
+                          <button
+                            onClick={handleOpenAddModal}
+                            className="px-4 py-2.5 text-xs font-medium rounded-lg bg-white/5 hover:bg-white/10 text-white border border-white/10 flex items-center space-x-1.5 transition-all cursor-pointer"
+                          >
+                            <Plus size={14} />
+                            <span>Record Trade Manually</span>
+                          </button>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ) : (
