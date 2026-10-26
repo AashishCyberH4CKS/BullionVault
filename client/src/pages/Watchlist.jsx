@@ -156,7 +156,7 @@ const Watchlist = () => {
                 <div className="my-2 flex justify-between items-baseline">
                   <span className="text-3xl font-extrabold text-white tracking-tight">
                     {item.code === 'crudeoil' ? '$' : '₹'}
-                    {item.latestPrice.toLocaleString()}
+                    {Number(item.latestPrice !== undefined ? item.latestPrice : (item.price || 0)).toLocaleString()}
                   </span>
                   
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center ${

@@ -212,7 +212,7 @@ const Inventory = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="p-5 bg-white/5 border border-white/5 rounded-xl shadow-md">
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Total Stock Valuation</p>
-          <p className="text-xl font-bold text-white mt-1.5">₹{stats.totalValue.toLocaleString('en-IN')}</p>
+          <p className="text-xl font-bold text-white mt-1.5">₹{Number(stats?.totalValue || 0).toLocaleString('en-IN')}</p>
           <span className="text-[10px] text-accent font-semibold">Live asset value</span>
         </div>
         <div className="p-5 bg-white/5 border border-white/5 rounded-xl shadow-md">
@@ -345,7 +345,7 @@ const Inventory = () => {
                               {item.quantity} <span className="text-[10px] text-gray-500 uppercase">{item.unit}</span>
                             </td>
                             <td className="p-4 text-right font-bold text-accent">
-                              ₹{item.currentValue ? item.currentValue.toLocaleString('en-IN') : '0'}
+                              ₹{Number(item?.currentValue || 0).toLocaleString('en-IN')}
                             </td>
                             <td className="p-4">
                               <span className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
@@ -393,16 +393,16 @@ const Inventory = () => {
               <div className="p-6 bg-white/5 border border-white/5 rounded-xl shadow-md">
                 <h3 className="text-sm font-bold text-white mb-4">Stock Value by Commodity</h3>
                 <div className="space-y-4">
-                  {stats.commodityBreakdown.map((c) => (
+                  {stats.commodityBreakdown?.map((c) => (
                     <div key={c.code} className="space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold">
                         <span className="text-white capitalize">{c.name}</span>
-                        <span className="text-gray-400">₹{c.value.toLocaleString('en-IN')} ({c.quantity} items)</span>
+                        <span className="text-gray-400">₹{Number(c?.value || 0).toLocaleString('en-IN')} ({c.quantity || 0} items)</span>
                       </div>
                       <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
                         <div 
                           className="bg-accent h-full rounded-full" 
-                          style={{ width: `${stats.totalValue > 0 ? (c.value / stats.totalValue) * 100 : 0}%` }}
+                          style={{ width: `${(stats?.totalValue || 0) > 0 ? (Number(c?.value || 0) / stats.totalValue) * 100 : 0}%` }}
                         ></div>
                       </div>
                     </div>
@@ -414,16 +414,16 @@ const Inventory = () => {
               <div className="p-6 bg-white/5 border border-white/5 rounded-xl shadow-md">
                 <h3 className="text-sm font-bold text-white mb-4">Warehouse Facility Concentration</h3>
                 <div className="space-y-4">
-                  {stats.locationBreakdown.map((loc) => (
+                  {stats.locationBreakdown?.map((loc) => (
                     <div key={loc.name} className="space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold">
                         <span className="text-white">{loc.name}</span>
-                        <span className="text-gray-400">₹{loc.value.toLocaleString('en-IN')}</span>
+                        <span className="text-gray-400">₹{Number(loc?.value || 0).toLocaleString('en-IN')}</span>
                       </div>
                       <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
                         <div 
                           className="bg-gradient-to-r from-amber-400 to-amber-600 h-full rounded-full" 
-                          style={{ width: `${stats.totalValue > 0 ? (loc.value / stats.totalValue) * 100 : 0}%` }}
+                          style={{ width: `${(stats?.totalValue || 0) > 0 ? (Number(loc?.value || 0) / stats.totalValue) * 100 : 0}%` }}
                         ></div>
                       </div>
                     </div>

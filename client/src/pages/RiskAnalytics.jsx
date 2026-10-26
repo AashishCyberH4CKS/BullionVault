@@ -121,12 +121,12 @@ const RiskAnalytics = () => {
     if (txStats && txStats.netProfit > 0) {
       insights.push({
         type: 'success',
-        message: `Capital Efficiency: Positive net cash flow of ₹${txStats.netProfit.toLocaleString('en-IN')} achieved. Current sales invoices are outperforming purchase expenditures.`,
+        message: `Capital Efficiency: Positive net cash flow of ₹${Number(txStats.netProfit || 0).toLocaleString('en-IN')} achieved. Current sales invoices are outperforming purchase expenditures.`,
       });
     } else if (txStats && txStats.netProfit < 0) {
       insights.push({
         type: 'warning',
-        message: `Capital Allocation: Negative net cash flow of ₹${Math.abs(txStats.netProfit).toLocaleString('en-IN')} detected due to heavy inventory restocking this quarter.`,
+        message: `Capital Allocation: Negative net cash flow of ₹${Number(Math.abs(txStats.netProfit) || 0).toLocaleString('en-IN')} detected due to heavy inventory restocking this quarter.`,
       });
     }
 
@@ -227,7 +227,7 @@ const RiskAnalytics = () => {
                       {portfolioStats.allocations?.map((alloc) => (
                         <tr key={alloc.code} className="hover:bg-white/5 transition-colors">
                           <td className="py-2.5 font-semibold text-white capitalize">{alloc.commodity}</td>
-                          <td className="py-2.5 text-right font-bold text-accent">₹{alloc.value.toLocaleString('en-IN')}</td>
+                          <td className="py-2.5 text-right font-bold text-accent">₹{Number(alloc?.value || 0).toLocaleString('en-IN')}</td>
                           <td className="py-2.5 text-right font-semibold text-white">{alloc.percentage}%</td>
                           <td className={`py-2.5 text-right font-bold ${parseFloat(alloc.roi) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                             {alloc.roi}%
@@ -258,22 +258,22 @@ const RiskAnalytics = () => {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl shadow-md">
                   <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Total Capital Invested</p>
-                  <p className="text-lg font-bold text-white mt-1.5">₹{portfolioStats.totalInvested.toLocaleString('en-IN')}</p>
+                  <p className="text-lg font-bold text-white mt-1.5">₹{Number(portfolioStats?.totalInvested || 0).toLocaleString('en-IN')}</p>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl shadow-md">
                   <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Current Asset Valuation</p>
-                  <p className="text-lg font-bold text-white mt-1.5">₹{portfolioStats.totalValue.toLocaleString('en-IN')}</p>
+                  <p className="text-lg font-bold text-white mt-1.5">₹{Number(portfolioStats?.totalValue || 0).toLocaleString('en-IN')}</p>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl shadow-md">
                   <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Unrealized profit & loss</p>
-                  <p className={`text-lg font-bold mt-1.5 ${portfolioStats.totalProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                    ₹{portfolioStats.totalProfit.toLocaleString('en-IN')}
+                  <p className={`text-lg font-bold mt-1.5 ${(portfolioStats?.totalProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                    ₹{Number(portfolioStats?.totalProfit || 0).toLocaleString('en-IN')}
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl shadow-md">
                   <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Yield Return Ratio (ROI)</p>
-                  <p className={`text-lg font-bold mt-1.5 ${portfolioStats.roi >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                    {portfolioStats.roi}%
+                  <p className={`text-lg font-bold mt-1.5 ${(portfolioStats?.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                    {Number(portfolioStats?.roi || 0)}%
                   </p>
                 </div>
               </div>
@@ -294,15 +294,15 @@ const RiskAnalytics = () => {
                     </thead>
                     <tbody className="divide-y divide-white/5 font-semibold">
                       {portfolioStats.timeline?.map((item, idx) => {
-                        const profit = item.currentValue - item.invested;
-                        const roi = item.invested > 0 ? (profit / item.invested) * 100 : 0;
+                        const profit = Number(item.currentValue || 0) - Number(item.invested || 0);
+                        const roi = Number(item.invested || 0) > 0 ? (profit / Number(item.invested)) * 100 : 0;
                         return (
                           <tr key={idx} className="hover:bg-white/5 transition-colors">
                             <td className="py-3 text-white">{item.year} - {item.quarter}</td>
-                            <td className="py-3 text-right text-gray-400">₹{item.invested.toLocaleString('en-IN')}</td>
-                            <td className="py-3 text-right text-white">₹{item.currentValue.toLocaleString('en-IN')}</td>
+                            <td className="py-3 text-right text-gray-400">₹{Number(item.invested || 0).toLocaleString('en-IN')}</td>
+                            <td className="py-3 text-right text-white">₹{Number(item.currentValue || 0).toLocaleString('en-IN')}</td>
                             <td className={`py-3 text-right ${profit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                              ₹{profit.toLocaleString('en-IN')}
+                              ₹{Number(profit || 0).toLocaleString('en-IN')}
                             </td>
                             <td className={`py-3 text-right ${roi >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                               {roi.toFixed(2)}%
@@ -409,17 +409,17 @@ const RiskAnalytics = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                       <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Current Portfolio Value</p>
-                        <p className="text-lg font-bold text-white mt-1.5">₹{sim.oldVal.toLocaleString('en-IN')}</p>
+                        <p className="text-lg font-bold text-white mt-1.5">₹{Number(sim?.oldVal || 0).toLocaleString('en-IN')}</p>
                       </div>
                       <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Simulated Value Shift</p>
-                        <p className={`text-lg font-bold mt-1.5 ${sim.delta >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-                          {sim.delta >= 0 ? '+' : ''}₹{sim.delta.toLocaleString('en-IN')}
+                        <p className={`text-lg font-bold mt-1.5 ${(sim?.delta || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {(sim?.delta || 0) >= 0 ? '+' : ''}₹{Number(sim?.delta || 0).toLocaleString('en-IN')}
                         </p>
                       </div>
                       <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                         <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Projected Value Result</p>
-                        <p className="text-lg font-bold text-white mt-1.5">₹{sim.newVal.toLocaleString('en-IN')}</p>
+                        <p className="text-lg font-bold text-white mt-1.5">₹{Number(sim?.newVal || 0).toLocaleString('en-IN')}</p>
                       </div>
                     </div>
                   );

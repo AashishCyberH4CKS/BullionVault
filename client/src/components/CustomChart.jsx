@@ -66,12 +66,14 @@ const CustomChart = ({ type = 'line', data, options = {}, height }) => {
             if (label) {
               label += ': ';
             }
-            if (context.parsed.y !== null) {
-              label += typeof context.parsed.y === 'number' 
-                ? 'INR ' + context.parsed.y.toLocaleString(undefined, { maximumFractionDigits: 2 })
-                : context.parsed.y;
-            } else if (context.parsed !== null) {
+            if (context.parsed && typeof context.parsed.y === 'number' && !isNaN(context.parsed.y)) {
+              label += 'INR ' + context.parsed.y.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            } else if (typeof context.parsed === 'number' && !isNaN(context.parsed)) {
               label += 'INR ' + context.parsed.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            } else if (context.raw !== undefined && context.raw !== null && !isNaN(Number(context.raw))) {
+              label += 'INR ' + Number(context.raw).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            } else if (context.raw) {
+              label += String(context.raw);
             }
             return label;
           }

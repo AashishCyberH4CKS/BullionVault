@@ -6,6 +6,7 @@ import { Menu } from 'lucide-react';
 
 // Layout & Components
 import Sidebar from './components/Sidebar';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Pages
 import Landing from './pages/Landing';
@@ -154,11 +155,13 @@ const AppRoutes = () => {
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <ThemeProvider>
-          <AppRoutes />
-        </ThemeProvider>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <ThemeProvider>
+            <AppRoutes />
+          </ThemeProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </Router>
   );
 }

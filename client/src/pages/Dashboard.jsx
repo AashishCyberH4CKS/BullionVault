@@ -146,24 +146,24 @@ const Dashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="p-5 bg-[#090D17] border border-white/5 rounded-xl shadow-md space-y-1">
           <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Total Portfolio Value (NAV)</span>
-          <p className="text-xl font-bold text-white">₹{portfolioStats ? portfolioStats.totalValue.toLocaleString('en-IN') : '0'}</p>
+          <p className="text-xl font-bold text-white">₹{Number(portfolioStats?.totalValue || 0).toLocaleString('en-IN')}</p>
           <p className="text-[10px] text-gray-400">Total invested and market-mapped holdings</p>
         </div>
 
         <div className="p-5 bg-[#090D17] border border-white/5 rounded-xl shadow-md space-y-1">
           <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Bulk Inventory Reserve Value</span>
-          <p className="text-xl font-bold text-white">₹{inventoryStats ? inventoryStats.totalValue.toLocaleString('en-IN') : '0'}</p>
+          <p className="text-xl font-bold text-white">₹{Number(inventoryStats?.totalValue || 0).toLocaleString('en-IN')}</p>
           <p className="text-[10px] text-gray-400">Warehouse stock valuation index</p>
         </div>
 
         <div className="p-5 bg-[#090D17] border border-white/5 rounded-xl shadow-md space-y-1">
           <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Total Unrealized returns (P&L)</span>
           <div className="flex items-center space-x-2 mt-0.5">
-            <p className={`text-xl font-bold ${portfolioStats && portfolioStats.totalProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-              ₹{portfolioStats ? portfolioStats.totalProfit.toLocaleString('en-IN') : '0'}
+            <p className={`text-xl font-bold ${(portfolioStats?.totalProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+              ₹{Number(portfolioStats?.totalProfit || 0).toLocaleString('en-IN')}
             </p>
-            <span className={`text-[10px] font-bold flex items-center ${portfolioStats && portfolioStats.totalProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-              {portfolioStats && portfolioStats.totalProfit >= 0 ? '+' : ''}{portfolioStats ? portfolioStats.roi : '0'}%
+            <span className={`text-[10px] font-bold flex items-center ${(portfolioStats?.totalProfit || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+              {(portfolioStats?.totalProfit || 0) >= 0 ? '+' : ''}{Number(portfolioStats?.roi || 0)}%
             </span>
           </div>
           <p className="text-[10px] text-gray-400">Net portfolio margin metrics</p>
@@ -191,30 +191,30 @@ const Dashboard = () => {
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
                 <span className="text-gray-400">Gold Exposure</span>
-                <span className="text-white">₹{goldAlloc.value.toLocaleString('en-IN')} ({goldAlloc.percentage}%)</span>
+                <span className="text-white">₹{Number(goldAlloc?.value || 0).toLocaleString('en-IN')} ({goldAlloc.percentage || 0}%)</span>
               </div>
               <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-[#FFD700] h-full rounded-full" style={{ width: `${goldAlloc.percentage}%` }}></div>
+                <div className="bg-[#FFD700] h-full rounded-full" style={{ width: `${goldAlloc.percentage || 0}%` }}></div>
               </div>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
                 <span className="text-gray-400">Silver Exposure</span>
-                <span className="text-white">₹{silverAlloc.value.toLocaleString('en-IN')} ({silverAlloc.percentage}%)</span>
+                <span className="text-white">₹{Number(silverAlloc?.value || 0).toLocaleString('en-IN')} ({silverAlloc.percentage || 0}%)</span>
               </div>
               <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-[#CBD5E1] h-full rounded-full" style={{ width: `${silverAlloc.percentage}%` }}></div>
+                <div className="bg-[#CBD5E1] h-full rounded-full" style={{ width: `${silverAlloc.percentage || 0}%` }}></div>
               </div>
             </div>
 
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs font-semibold">
                 <span className="text-gray-400">Other Commodities</span>
-                <span className="text-white">₹{otherAllocVal.toLocaleString('en-IN')} ({otherAllocPercent}%)</span>
+                <span className="text-white">₹{Number(otherAllocVal || 0).toLocaleString('en-IN')} ({otherAllocPercent || 0}%)</span>
               </div>
               <div className="w-full bg-white/5 h-1.5 rounded-full overflow-hidden">
-                <div className="bg-accent h-full rounded-full" style={{ width: `${otherAllocPercent}%` }}></div>
+                <div className="bg-accent h-full rounded-full" style={{ width: `${otherAllocPercent || 0}%` }}></div>
               </div>
             </div>
           </div>
@@ -310,7 +310,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold text-white">₹{tx.totalValue.toLocaleString('en-IN')}</p>
+                  <p className="text-xs font-bold text-white">₹{Number(tx?.totalValue || 0).toLocaleString('en-IN')}</p>
                   <span className="text-[9px] text-gray-400 font-semibold">{tx.quantity} {tx.unit}</span>
                 </div>
               </div>
@@ -342,9 +342,11 @@ const Dashboard = () => {
                   <p className="text-[9px] text-gray-500 mt-0.5 font-semibold">10g / bbl average</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold text-white">₹{comm.latestPrice.toLocaleString('en-IN')}</p>
-                  <span className={`text-[9px] font-bold ${comm.qoqChangePercent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {comm.qoqChangePercent >= 0 ? '+' : ''}{comm.qoqChangePercent}%
+                  <p className="text-xs font-bold text-white">
+                    ₹{Number(comm.latestPrice !== undefined ? comm.latestPrice : (comm.price || 0)).toLocaleString('en-IN')}
+                  </p>
+                  <span className={`text-[9px] font-bold ${Number(comm.qoqChangePercent || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {Number(comm.qoqChangePercent || 0) >= 0 ? '+' : ''}{Number(comm.qoqChangePercent || 0)}%
                   </span>
                 </div>
               </div>

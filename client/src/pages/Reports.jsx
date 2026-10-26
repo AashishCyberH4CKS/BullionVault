@@ -289,7 +289,7 @@ const Reports = () => {
                         <span className="text-amber-400 font-bold">• Official Printable Document</span>
                       </p>
                       <span className="text-[9px] text-gray-500 block mt-0.5">
-                        Generated: {new Date(rep.createdAt).toLocaleString('en-IN')}
+                        Generated: {rep.createdAt ? new Date(rep.createdAt).toLocaleString('en-IN') : 'Recently'}
                       </span>
                     </div>
                   </div>

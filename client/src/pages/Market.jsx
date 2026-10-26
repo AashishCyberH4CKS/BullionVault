@@ -100,20 +100,22 @@ const Market = () => {
 
   // Adjust prices based on unit selected
   const scalePriceByUnit = (basePrice, commCode) => {
+    const raw = Number(basePrice);
+    const valid = isNaN(raw) ? 0 : raw;
     if (commCode === 'gold' || commCode === 'silver' || commCode === 'platinum') {
       // Base DB price is per 10 grams
-      const pricePerGram = basePrice / 10;
+      const pricePerGram = valid / 10;
       if (unitFilter === 'kg') return pricePerGram * 1000;
       if (unitFilter === 'ton') return pricePerGram * 1000000;
       return pricePerGram;
     }
     if (commCode === 'copper') {
       // Base DB copper is per 1000g (1kg)
-      if (unitFilter === 'g') return basePrice / 1000;
-      if (unitFilter === 'ton') return basePrice * 1000;
-      return basePrice;
+      if (unitFilter === 'g') return valid / 1000;
+      if (unitFilter === 'ton') return valid * 1000;
+      return valid;
     }
-    return basePrice;
+    return valid;
   };
 
   const getUnitSymbol = (commCode) => {
@@ -253,32 +255,32 @@ const Market = () => {
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Latest Rate</span>
                   <p className="text-base font-bold text-white mt-1.5">
-                    ₹{scalePriceByUnit(activeCommodityData.latestPrice, selectedCommodity).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                    ₹{Number(scalePriceByUnit(activeCommodityData.latestPrice, selectedCommodity) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                   </p>
                   <span className="text-[9px] text-gray-400 font-semibold">{getUnitSymbol(selectedCommodity)}</span>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Opening price</span>
                   <p className="text-base font-bold text-white mt-1.5">
-                    ₹{scalePriceByUnit(activeCommodityData.openingPrice || activeCommodityData.latestPrice * 0.98, selectedCommodity).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                    ₹{Number(scalePriceByUnit(activeCommodityData.openingPrice || (activeCommodityData.latestPrice || 0) * 0.98, selectedCommodity) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Day High</span>
                   <p className="text-base font-bold text-emerald-400 mt-1.5">
-                    ₹{scalePriceByUnit(activeCommodityData.dayHigh || activeCommodityData.latestPrice * 1.02, selectedCommodity).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                    ₹{Number(scalePriceByUnit(activeCommodityData.dayHigh || (activeCommodityData.latestPrice || 0) * 1.02, selectedCommodity) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Day Low</span>
                   <p className="text-base font-bold text-rose-400 mt-1.5">
-                    ₹{scalePriceByUnit(activeCommodityData.dayLow || activeCommodityData.latestPrice * 0.97, selectedCommodity).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                    ₹{Number(scalePriceByUnit(activeCommodityData.dayLow || (activeCommodityData.latestPrice || 0) * 0.97, selectedCommodity) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                   <span className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">QoQ Change %</span>
-                  <p className={`text-base font-bold mt-1.5 ${activeCommodityData.qoqChangePercent >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {activeCommodityData.qoqChangePercent >= 0 ? '+' : ''}{activeCommodityData.qoqChangePercent}%
+                  <p className={`text-base font-bold mt-1.5 ${Number(activeCommodityData.qoqChangePercent || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                    {Number(activeCommodityData.qoqChangePercent || 0) >= 0 ? '+' : ''}{Number(activeCommodityData.qoqChangePercent || 0)}%
                   </p>
                 </div>
               </div>
@@ -336,7 +338,7 @@ const Market = () => {
                           <td className="p-4 text-gray-400">{p.state}</td>
                           <td className="p-4 text-gray-400">{p.purity}</td>
                           <td className="p-4 text-right font-bold text-white">
-                            ₹{scalePriceByUnit(p.price, selectedCommodity).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
+                            ₹{Number(scalePriceByUnit(p.price, selectedCommodity) || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                           </td>
                           <td className={`p-4 text-right font-semibold ${p.qoqChangePercent >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             {p.qoqChangePercent >= 0 ? '+' : ''}{p.qoqChangePercent}%
@@ -461,7 +463,7 @@ const Market = () => {
                       <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
                         <span className="text-[10px] text-gray-400 uppercase font-semibold block">Absolute Spread</span>
                         <div className="flex items-baseline gap-2 mt-1">
-                          <span className="text-xl font-bold text-white">₹{spread.toLocaleString('en-IN')}</span>
+                          <span className="text-xl font-bold text-white">₹{Number(spread || 0).toLocaleString('en-IN')}</span>
                           <span className="text-[10px] text-gray-400">price differential</span>
                         </div>
                       </div>
@@ -494,7 +496,7 @@ const Market = () => {
                         <div className="space-y-3">
                           <div className="flex justify-between border-b border-white/5 pb-2">
                             <span className="text-gray-400">Spot Benchmark Rate</span>
-                            <span className="text-white font-bold text-sm">₹{price1.toLocaleString('en-IN')}</span>
+                            <span className="text-white font-bold text-sm">₹{Number(price1 || 0).toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex justify-between border-b border-white/5 pb-2">
                             <span className="text-gray-400">Quarter-over-Quarter Shift</span>
@@ -530,7 +532,7 @@ const Market = () => {
                         <div className="space-y-3">
                           <div className="flex justify-between border-b border-white/5 pb-2">
                             <span className="text-gray-400">Spot Benchmark Rate</span>
-                            <span className="text-white font-bold text-sm">₹{price2.toLocaleString('en-IN')}</span>
+                            <span className="text-white font-bold text-sm">₹{Number(price2 || 0).toLocaleString('en-IN')}</span>
                           </div>
                           <div className="flex justify-between border-b border-white/5 pb-2">
                             <span className="text-gray-400">Quarter-over-Quarter Shift</span>

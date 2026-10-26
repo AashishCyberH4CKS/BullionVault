@@ -59,7 +59,8 @@ const Chatbot = () => {
     if (q.includes('gold price') || q.includes('gold rate') || q.includes('rate of gold')) {
       const rate = rates.gold;
       if (rate) {
-        return `The latest recorded spot rate for Gold is ₹${rate.latestPrice.toLocaleString()} per ${rate.unit} (${rate.quarter}). The QoQ trend is ${rate.qoqChangePercent >= 0 ? 'up' : 'down'} by ${rate.qoqChangePercent}%.`;
+        const p = Number(rate.latestPrice !== undefined ? rate.latestPrice : (rate.price || 0));
+        return `The latest recorded spot rate for Gold is ₹${p.toLocaleString()} per ${rate.unit || '10g'} (${rate.quarter || 'Q2 2026'}). The QoQ trend is ${Number(rate.qoqChangePercent || 0) >= 0 ? 'up' : 'down'} by ${rate.qoqChangePercent || 0}%.`;
       }
       return "The current market rate for 24K Gold in India is approximately ₹82,500 per 10 grams (Q2 2026).";
     }
@@ -67,7 +68,8 @@ const Chatbot = () => {
     if (q.includes('silver price') || q.includes('silver rate') || q.includes('rate of silver')) {
       const rate = rates.silver;
       if (rate) {
-        return `The latest spot rate for Silver stands at ₹${rate.latestPrice.toLocaleString()} per ${rate.unit} (${rate.quarter}). Growth has registered ${rate.qoqChangePercent}%.`;
+        const p = Number(rate.latestPrice !== undefined ? rate.latestPrice : (rate.price || 0));
+        return `The latest spot rate for Silver stands at ₹${p.toLocaleString()} per ${rate.unit || '10g'} (${rate.quarter || 'Q2 2026'}). Growth has registered ${rate.qoqChangePercent || 0}%.`;
       }
       return "The latest Silver index price is approximately ₹95,000 per Kilogram (Q2 2026).";
     }
@@ -75,7 +77,8 @@ const Chatbot = () => {
     if (q.includes('platinum price') || q.includes('platinum rate') || q.includes('rate of platinum')) {
       const rate = rates.platinum;
       if (rate) {
-        return `Platinum spot index stands at ₹${rate.latestPrice.toLocaleString()} per ${rate.unit} (${rate.quarter}). Trend index is ${rate.qoqChangePercent}%.`;
+        const p = Number(rate.latestPrice !== undefined ? rate.latestPrice : (rate.price || 0));
+        return `Platinum spot index stands at ₹${p.toLocaleString()} per ${rate.unit || '10g'} (${rate.quarter || 'Q2 2026'}). Trend index is ${rate.qoqChangePercent || 0}%.`;
       }
       return "Platinum spot rate stands at ₹51,000 per 10 grams (Q2 2026).";
     }
@@ -83,7 +86,8 @@ const Chatbot = () => {
     if (q.includes('crude oil') || q.includes('oil price') || q.includes('rate of oil')) {
       const rate = rates.crudeoil;
       if (rate) {
-        return `Crude Oil benchmark index stands at $${rate.latestPrice.toLocaleString()} per ${rate.unit} (${rate.quarter}), showing a QoQ return of ${rate.qoqChangePercent}%.`;
+        const p = Number(rate.latestPrice !== undefined ? rate.latestPrice : (rate.price || 0));
+        return `Crude Oil benchmark index stands at $${p.toLocaleString()} per ${rate.unit || 'bbl'} (${rate.quarter || 'Q2 2026'}), showing a QoQ return of ${rate.qoqChangePercent || 0}%.`;
       }
       return "Crude Oil Brent futures trade at approximately $6,848.4 per Barrel (Q2 2026).";
     }
@@ -91,7 +95,8 @@ const Chatbot = () => {
     if (q.includes('copper price') || q.includes('copper rate') || q.includes('rate of copper')) {
       const rate = rates.copper;
       if (rate) {
-        return `The latest recorded spot rate for Copper is ₹${rate.latestPrice.toLocaleString()} per ${rate.unit} (${rate.quarter}). The QoQ trend is ${rate.qoqChangePercent >= 0 ? 'up' : 'down'} by ${rate.qoqChangePercent}%.`;
+        const p = Number(rate.latestPrice !== undefined ? rate.latestPrice : (rate.price || 0));
+        return `The latest recorded spot rate for Copper is ₹${p.toLocaleString()} per ${rate.unit || 'kg'} (${rate.quarter || 'Q2 2026'}). The QoQ trend is ${Number(rate.qoqChangePercent || 0) >= 0 ? 'up' : 'down'} by ${rate.qoqChangePercent || 0}%.`;
       }
       return "The current market rate for Copper is approximately ₹750 per Kilogram (Q2 2026).";
     }

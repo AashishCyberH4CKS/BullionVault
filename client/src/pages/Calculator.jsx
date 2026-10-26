@@ -293,14 +293,14 @@ const Calculator = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <MetricCard
               title="Acquisition capital"
-              value={totalInvested}
-              subtext={buyLoading ? 'Fetching index...' : `Purchase: ₹${buyPrice.toLocaleString()} / unit`}
+              value={Number(totalInvested || 0)}
+              subtext={buyLoading ? 'Fetching index...' : `Purchase: ₹${Number(buyPrice || 0).toLocaleString()} / unit`}
               icon={DollarSign}
             />
             <MetricCard
               title="Estimated Value"
-              value={currentValue}
-              subtext={sellLoading ? 'Fetching index...' : `Selling: ₹${sellPrice.toLocaleString()} / unit`}
+              value={Number(currentValue || 0)}
+              subtext={sellLoading ? 'Fetching index...' : `Selling: ₹${Number(sellPrice || 0).toLocaleString()} / unit`}
               icon={Briefcase}
             />
           </div>
@@ -311,33 +311,33 @@ const Calculator = () => {
                 <h4 className="text-md font-bold text-white">Acquisition Returns Summary</h4>
                 <p className="text-xs text-gray-400">Yield breakdown across selected periods</p>
               </div>
-              <span className={`text-2xl font-black ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {roi.toFixed(2)}%
+              <span className={`text-2xl font-black ${(netProfit || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                {Number(roi || 0).toFixed(2)}%
               </span>
             </div>
 
             <div className="space-y-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-400">Total Profit / Loss</span>
-                <span className={`font-bold ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  ₹{netProfit.toLocaleString()}
+                <span className={`font-bold ${(netProfit || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  ₹{Number(netProfit || 0).toLocaleString()}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Holding Duration</span>
-                <span className="text-white font-medium">{durationYears.toFixed(2)} Years</span>
+                <span className="text-white font-medium">{Number(durationYears || 0).toFixed(2)} Years</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-400">Alternative Bank Deposit Return (7% CAGR)</span>
-                <span className="text-gray-300">₹{bankAlternativeReturn.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span className="text-gray-300">₹{Number(bankAlternativeReturn || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between pt-4 border-t border-white/5">
                 <span className="text-gray-400 flex items-center">
                   Alpha Performance vs Deposit Alternative
                   <HelpCircle size={14} className="ml-1 text-gray-500" title="Net Return subtracting bank alternative return" />
                 </span>
-                <span className={`font-extrabold ${differencePerformance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {differencePerformance >= 0 ? '+' : ''}₹{differencePerformance.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                <span className={`font-extrabold ${(differencePerformance || 0) >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                  {(differencePerformance || 0) >= 0 ? '+' : ''}₹{Number(differencePerformance || 0).toLocaleString(undefined, { maximumFractionDigits: 2 })}
                 </span>
               </div>
             </div>

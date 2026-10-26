@@ -421,7 +421,7 @@ const Administration = () => {
                             {JSON.stringify(log.details || {})}
                           </td>
                           <td className="p-4 text-gray-400 text-[10px] font-sans">
-                            {new Date(log.timestamp || log.createdAt).toLocaleString('en-IN')}
+                            {(log.timestamp || log.createdAt) ? new Date(log.timestamp || log.createdAt).toLocaleString('en-IN') : '-'}
                           </td>
                         </tr>
                       ))}

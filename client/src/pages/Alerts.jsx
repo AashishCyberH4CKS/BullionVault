@@ -333,7 +333,7 @@ const Alerts = () => {
         loading={deleteLoading}
         title="Delete Alert Trigger"
         message="Are you sure you want to delete this notification trigger?"
-        itemName={alertToDelete ? `${alertToDelete.category?.replace('_', ' ').toUpperCase()} | ${alertToDelete.commodityCode ? alertToDelete.commodityCode.toUpperCase() : 'General'} | Threshold: ₹${alertToDelete.thresholdValue?.toLocaleString('en-IN')}` : ''}
+        itemName={alertToDelete ? `${alertToDelete.category?.replace('_', ' ').toUpperCase()} | ${alertToDelete.commodityCode ? alertToDelete.commodityCode.toUpperCase() : 'General'} | Threshold: ₹${Number(alertToDelete.thresholdValue || 0).toLocaleString('en-IN')}` : ''}
       />
     </div>
   );

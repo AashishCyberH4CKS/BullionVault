@@ -7,11 +7,11 @@ const MetricCard = ({ title, value, subtext, change, changePercent, trend, icon:
   const isPositive = trend === 'Increase' || (changePercent && parseFloat(changePercent) > 0);
   const isNegative = trend === 'Decrease' || (changePercent && parseFloat(changePercent) < 0);
 
-  const formattedValue = typeof value === 'number' 
+  const formattedValue = typeof value === 'number' && !isNaN(value)
     ? (isCurrency 
         ? `${currencySymbol}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
         : value.toLocaleString())
-    : value;
+    : (value ?? '0');
 
   return (
     <motion.div

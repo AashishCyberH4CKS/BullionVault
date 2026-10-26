@@ -264,7 +264,7 @@ const Landing = () => {
                     <div>
                       <span className="text-2xl font-black text-white tracking-tight">
                         {comm.code === 'crudeoil' ? '$' : '₹'}
-                        {comm.latestPrice.toLocaleString()}
+                        {Number(comm.latestPrice !== undefined ? comm.latestPrice : (comm.price || 0)).toLocaleString()}
                       </span>
                       <div className="flex items-center mt-1 text-[10px]">
                         {isPositive 
@@ -272,7 +272,7 @@ const Landing = () => {
                           : <ArrowDownRight size={12} className="text-rose-400 mr-0.5" />
                         }
                         <span className={isPositive ? 'text-emerald-400' : 'text-rose-400'}>
-                          {isPositive ? '+' : ''}{comm.qoqChangePercent}% (QoQ)
+                          {isPositive ? '+' : ''}{Number(comm.qoqChangePercent || 0)}% (QoQ)
                         </span>
                       </div>
                     </div>

@@ -67,12 +67,12 @@ export const FALLBACK_COMMODITIES = [
 ];
 
 export const FALLBACK_MARKET_OVERVIEW = [
-  { code: 'gold', name: 'Gold 24K', price: 7250, unit: 'g', qoqChange: 180, qoqChangePercent: 2.55, trend: 'Upward' },
-  { code: 'silver', name: 'Silver 999', price: 88.5, unit: 'g', qoqChange: 3.2, qoqChangePercent: 3.75, trend: 'Upward' },
-  { code: 'platinum', name: 'Platinum 999', price: 3120, unit: 'g', qoqChange: -45, qoqChangePercent: -1.42, trend: 'Downward' },
-  { code: 'copper', name: 'Copper Cathode', price: 760, unit: 'kg', qoqChange: 25, qoqChangePercent: 3.40, trend: 'Upward' },
-  { code: 'crudeoil', name: 'Crude Oil (Brent)', price: 6450, unit: 'bbl', qoqChange: -120, qoqChangePercent: -1.82, trend: 'Downward' },
-  { code: 'naturalgas', name: 'Natural Gas', price: 275, unit: 'mmbtu', qoqChange: 15, qoqChangePercent: 5.76, trend: 'Upward' }
+  { code: 'gold', name: 'Gold 24K', price: 7250, latestPrice: 7250, unit: '24K (10g)', quarter: 'Q2 2026', qoqChange: 180, qoqChangePercent: 2.55, trend: 'Upward', sparkline: [7000, 7050, 7120, 7180, 7220, 7250] },
+  { code: 'silver', name: 'Silver 999', price: 88.5, latestPrice: 88.5, unit: '999 (10g)', quarter: 'Q2 2026', qoqChange: 3.2, qoqChangePercent: 3.75, trend: 'Upward', sparkline: [82, 84, 85, 86, 87, 88.5] },
+  { code: 'platinum', name: 'Platinum 999', price: 3120, latestPrice: 3120, unit: '999 (10g)', quarter: 'Q2 2026', qoqChange: -45, qoqChangePercent: -1.42, trend: 'Downward', sparkline: [3200, 3180, 3170, 3150, 3140, 3120] },
+  { code: 'copper', name: 'Copper Cathode', price: 760, latestPrice: 760, unit: 'Standard Grade (1kg)', quarter: 'Q2 2026', qoqChange: 25, qoqChangePercent: 3.40, trend: 'Upward', sparkline: [730, 735, 740, 745, 755, 760] },
+  { code: 'crudeoil', name: 'Crude Oil (Brent)', price: 6450, latestPrice: 6450, unit: 'Brent Blend (bbl)', quarter: 'Q2 2026', qoqChange: -120, qoqChangePercent: -1.82, trend: 'Downward', sparkline: [6600, 6580, 6520, 6500, 6480, 6450] },
+  { code: 'naturalgas', name: 'Natural Gas', price: 275, latestPrice: 275, unit: 'Pipeline Quality (mmbtu)', quarter: 'Q2 2026', qoqChange: 15, qoqChangePercent: 5.76, trend: 'Upward', sparkline: [255, 260, 265, 268, 272, 275] }
 ];
 
 // Commodity & Markets Services
@@ -89,7 +89,22 @@ export const commodityService = {
   getMarketOverview: async () => {
     try {
       const response = await api.get('/commodities/market/overview');
-      if (response.data?.success && response.data?.data?.length > 0) return response.data;
+      if (response.data?.success && Array.isArray(response.data?.data) && response.data.data.length > 0) {
+        const normalized = response.data.data.map(item => {
+          const rawPrice = item.latestPrice !== undefined ? item.latestPrice : item.price;
+          const safeVal = Number(rawPrice) || 0;
+          return {
+            ...item,
+            latestPrice: safeVal,
+            price: safeVal,
+            quarter: item.quarter || 'Q2 2026',
+            qoqChange: Number(item.qoqChange) || 0,
+            qoqChangePercent: Number(item.qoqChangePercent) || 0,
+            unit: item.unit || 'Standard Unit'
+          };
+        });
+        return { success: true, data: normalized };
+      }
       return { success: true, data: FALLBACK_MARKET_OVERVIEW };
     } catch (e) {
       return { success: true, data: FALLBACK_MARKET_OVERVIEW };
@@ -142,7 +157,7 @@ export const commodityService = {
       return response.data;
     } catch (e) {
       const fallback = FALLBACK_MARKET_OVERVIEW.find(c => c.code === code);
-      return { success: true, data: { price: fallback?.price || 5000 } };
+      return { success: true, data: { price: fallback?.price || 5000, quarter: 'Q2 2026' } };
     }
   }
 };

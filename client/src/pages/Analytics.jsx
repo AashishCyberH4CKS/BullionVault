@@ -278,19 +278,19 @@ const Analytics = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <GlassCard hover={false} className="p-5 flex flex-col justify-between h-32">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Historical Average Rate</p>
-                  <h3 className="text-2xl font-bold text-white mt-2">₹{Number(analyticsData.summary.avgPrice).toLocaleString()}</h3>
+                  <h3 className="text-2xl font-bold text-white mt-2">₹{Number(analyticsData.summary?.avgPrice || 0).toLocaleString()}</h3>
                   <span className="text-xs text-gray-500 mt-2">Calculated over all quarters</span>
                 </GlassCard>
                 
                 <GlassCard hover={false} className="p-5 flex flex-col justify-between h-32">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Historical Max Rate</p>
-                  <h3 className="text-2xl font-bold text-white mt-2">₹{analyticsData.summary.maxPrice.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-bold text-white mt-2">₹{Number(analyticsData.summary?.maxPrice || 0).toLocaleString()}</h3>
                   <span className="text-xs text-emerald-400 font-semibold mt-2">Market peak index</span>
                 </GlassCard>
 
                 <GlassCard hover={false} className="p-5 flex flex-col justify-between h-32">
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Historical Min Rate</p>
-                  <h3 className="text-2xl font-bold text-white mt-2">₹{analyticsData.summary.minPrice.toLocaleString()}</h3>
+                  <h3 className="text-2xl font-bold text-white mt-2">₹{Number(analyticsData.summary?.minPrice || 0).toLocaleString()}</h3>
                   <span className="text-xs text-rose-400 font-semibold mt-2">Market bottom floor</span>
                 </GlassCard>
               </div>
@@ -315,10 +315,10 @@ const Analytics = () => {
                       Cheapest Markets (Lowest Rates)
                     </h4>
                     <div className="space-y-3">
-                      {analyticsData.stateRanking.slice(0, 5).map((r, i) => (
-                        <div key={r._id} className="flex justify-between items-center text-xs py-2 border-b border-white/5">
+                      {analyticsData.stateRanking?.slice(0, 5).map((r, i) => (
+                        <div key={r._id || i} className="flex justify-between items-center text-xs py-2 border-b border-white/5">
                           <span className="text-gray-300 font-medium">#{i+1} {r.state}</span>
-                          <span className="text-white font-bold">₹{r.price.toLocaleString()}</span>
+                          <span className="text-white font-bold">₹{Number(r.price || 0).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>
@@ -330,10 +330,10 @@ const Analytics = () => {
                       Premium Markets (Highest Rates)
                     </h4>
                     <div className="space-y-3">
-                      {[...analyticsData.stateRanking].reverse().slice(0, 5).map((r, i) => (
-                        <div key={r._id} className="flex justify-between items-center text-xs py-2 border-b border-white/5">
+                      {[...(analyticsData.stateRanking || [])].reverse().slice(0, 5).map((r, i) => (
+                        <div key={r._id || i} className="flex justify-between items-center text-xs py-2 border-b border-white/5">
                           <span className="text-gray-300 font-medium">#{i+1} {r.state}</span>
-                          <span className="text-white font-bold">₹{r.price.toLocaleString()}</span>
+                          <span className="text-white font-bold">₹{Number(r.price || 0).toLocaleString()}</span>
                         </div>
                       ))}
                     </div>

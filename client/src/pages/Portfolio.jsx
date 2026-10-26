@@ -261,7 +261,7 @@ const Portfolio = () => {
             ...prev,
             purchasePrice: price
           }));
-          setLookupMessage(`Fetched Rate: ₹${price.toLocaleString()} (${res.data.data.quarter})`);
+          setLookupMessage(`Fetched Rate: ₹${Number(price || 0).toLocaleString()} (${res.data.data.quarter || 'Latest'})`);
         }
       } catch (err) {
         setFormState(prev => ({
@@ -392,22 +392,22 @@ const Portfolio = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Portfolio Valuation (NAV)</p>
-          <p className="text-lg font-bold text-white mt-1.5">₹{summary.totalValue.toLocaleString('en-IN')}</p>
+          <p className="text-lg font-bold text-white mt-1.5">₹{Number(summary?.totalValue || 0).toLocaleString('en-IN')}</p>
         </div>
         <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Total Invested Capital</p>
-          <p className="text-lg font-bold text-white mt-1.5">₹{summary.totalInvested.toLocaleString('en-IN')}</p>
+          <p className="text-lg font-bold text-white mt-1.5">₹{Number(summary?.totalInvested || 0).toLocaleString('en-IN')}</p>
         </div>
         <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Cumulative Net Profit</p>
-          <p className={`text-lg font-bold mt-1.5 ${summary.totalProfit >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-            ₹{summary.totalProfit.toLocaleString('en-IN')}
+          <p className={`text-lg font-bold mt-1.5 ${(summary?.totalProfit || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            ₹{Number(summary?.totalProfit || 0).toLocaleString('en-IN')}
           </p>
         </div>
         <div className="p-4 bg-white/5 border border-white/5 rounded-xl">
           <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Return Ratio (ROI)</p>
-          <p className={`text-lg font-bold mt-1.5 ${summary.roi >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-            {summary.roi.toFixed(2)}%
+          <p className={`text-lg font-bold mt-1.5 ${(summary?.roi || 0) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            {Number(summary?.roi || 0).toFixed(2)}%
           </p>
         </div>
       </div>
@@ -446,7 +446,7 @@ const Portfolio = () => {
                     <div key={alloc.code} className="space-y-1.5">
                       <div className="flex justify-between text-xs font-semibold">
                         <span className="text-white capitalize">{alloc.commodity}</span>
-                        <span className="text-gray-400">₹{alloc.value.toLocaleString('en-IN')} ({alloc.percentage}%)</span>
+                        <span className="text-gray-400">₹{Number(alloc?.value || 0).toLocaleString('en-IN')} ({alloc.percentage || 0}%)</span>
                       </div>
                       <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden">
                         <div 
@@ -526,15 +526,15 @@ const Portfolio = () => {
                             <td className="p-4 text-right font-semibold text-white">
                               {inv.quantity} <span className="text-[9px] text-gray-500 uppercase">{inv.weight === 1000 ? 'kg' : 'g'}</span>
                             </td>
-                            <td className="p-4 text-right text-gray-400">₹{inv.purchasePrice.toLocaleString()}</td>
-                            <td className="p-4 text-right text-gray-400">₹{inv.currentPrice.toLocaleString()}</td>
-                            <td className="p-4 text-right font-bold text-white">₹{inv.investedValue.toLocaleString()}</td>
-                            <td className="p-4 text-right font-bold text-white">₹{inv.currentValue.toLocaleString()}</td>
+                            <td className="p-4 text-right text-gray-400">₹{Number(inv.purchasePrice || 0).toLocaleString()}</td>
+                            <td className="p-4 text-right text-gray-400">₹{Number(inv.currentPrice || 0).toLocaleString()}</td>
+                            <td className="p-4 text-right font-bold text-white">₹{Number(inv.investedValue || 0).toLocaleString()}</td>
+                            <td className="p-4 text-right font-bold text-white">₹{Number(inv.currentValue || 0).toLocaleString()}</td>
                             <td className={`p-4 text-right font-bold ${isGain ? 'text-emerald-500' : 'text-red-500'}`}>
-                              ₹{inv.profit.toLocaleString()}
+                              ₹{Number(inv.profit || 0).toLocaleString()}
                             </td>
                             <td className={`p-4 text-right font-black ${isGain ? 'text-emerald-400' : 'text-rose-400'}`}>
-                              {inv.growthPercent.toFixed(1)}%
+                              {Number(inv.growthPercent || 0).toFixed(1)}%
                             </td>
                             <td className="p-4 text-center">
                               <button
@@ -570,14 +570,14 @@ const Portfolio = () => {
                   </thead>
                   <tbody className="divide-y divide-white/5 font-semibold text-gray-300">
                     {summary.timeline?.map((item, idx) => {
-                      const delta = item.currentValue - item.invested;
+                      const delta = Number(item.currentValue || 0) - Number(item.invested || 0);
                       return (
                         <tr key={idx} className="hover:bg-white/5 transition-colors">
                           <td className="py-2.5 text-white">{item.year} - {item.quarter}</td>
-                          <td className="py-2.5 text-right">₹{item.invested.toLocaleString()}</td>
-                          <td className="py-2.5 text-right text-white">₹{item.currentValue.toLocaleString()}</td>
+                          <td className="py-2.5 text-right">₹{Number(item.invested || 0).toLocaleString()}</td>
+                          <td className="py-2.5 text-right text-white">₹{Number(item.currentValue || 0).toLocaleString()}</td>
                           <td className={`py-2.5 text-right ${delta >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                            ₹{delta.toLocaleString()}
+                            ₹{Number(delta || 0).toLocaleString()}
                           </td>
                         </tr>
                       );
@@ -751,7 +751,7 @@ const Portfolio = () => {
         loading={deleteLoading}
         title="Delete Portfolio Holding"
         message="Are you sure you want to delete this precious metal holding record?"
-        itemName={holdingToDelete ? `${holdingToDelete.commodityCode?.toUpperCase()} (${holdingToDelete.purity}, ${holdingToDelete.quantity}x ${holdingToDelete.weight}g) | Invested: ₹${holdingToDelete.investedValue?.toLocaleString()}` : ''}
+        itemName={holdingToDelete ? `${holdingToDelete.commodityCode?.toUpperCase()} (${holdingToDelete.purity}, ${holdingToDelete.quantity}x ${holdingToDelete.weight}g) | Invested: ₹${Number(holdingToDelete.investedValue || 0).toLocaleString()}` : ''}
       />
     </div>
   );
