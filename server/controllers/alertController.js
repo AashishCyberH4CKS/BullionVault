@@ -9,6 +9,11 @@ const Investment = require('../models/Investment');
 // @access  Private
 const getAlerts = async (req, res) => {
   try {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({ success: true, data: [] });
+    }
+
     const query = req.user.companyId 
       ? { companyId: req.user.companyId } 
       : { userId: req.user.id };

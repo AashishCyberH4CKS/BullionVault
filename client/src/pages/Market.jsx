@@ -62,15 +62,17 @@ const Market = () => {
   const loadMarketData = async () => {
     try {
       setLoading(true);
-      const [commRes, priceRes, overviewRes] = await Promise.all([
+      const [commRes, priceRes, overviewRes] = await Promise.allSettled([
         api.get('/api/commodities'),
         api.get(`/api/commodities/${selectedCommodity}/prices?page=${page}&limit=10`),
-        api.get('/api/commodities/market/overview').catch(() => ({ data: { success: false, data: [] } }))
+        api.get('/api/commodities/market/overview')
       ]);
 
-      if (commRes.data.success) {
-        const overviews = overviewRes?.data?.success ? overviewRes.data.data : [];
-        const enrichedCommodities = commRes.data.data.map(c => {
+      const commData = (commRes.status === 'fulfilled' && commRes.value.data.success) ? commRes.value.data.data : [];
+      const overviews = (overviewRes.status === 'fulfilled' && overviewRes.value.data.success) ? overviewRes.value.data.data : [];
+
+      if (commData.length > 0) {
+        const enrichedCommodities = commData.map(c => {
           const ov = overviews.find(o => o.code === c.code) || {};
           return {
             ...c,
@@ -83,9 +85,10 @@ const Market = () => {
         });
         setCommodities(enrichedCommodities);
       }
-      if (priceRes.data.success) {
-        setPrices(priceRes.data.data);
-        setTotalPages(priceRes.data.pagination?.pages || 1);
+
+      if (priceRes.status === 'fulfilled' && priceRes.value.data.success) {
+        setPrices(priceRes.value.data.data);
+        setTotalPages(priceRes.value.data.pagination?.pages || 1);
       }
     } catch (err) {
       console.error('Error fetching market analyzer data:', err);

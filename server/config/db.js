@@ -1,32 +1,43 @@
 const mongoose = require('mongoose');
 
+// Reduce buffer timeout so unbuffered queries fail fast to fallbacks if MongoDB is not connected
+mongoose.set('bufferTimeoutMS', 1000);
+
+// Cache database connection state across serverless warm invocations
+let isConnecting = false;
+
 const connectDB = async () => {
+  // If already connected, reuse existing connection
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+
+  // If already connecting, avoid duplicate parallel connection attempts
+  if (isConnecting) {
+    return null;
+  }
+
+  const mongoUri = process.env.MONGO_URI || process.env.MONGODB_URI;
+  if (!mongoUri) {
+    console.info('No MONGO_URI / MONGODB_URI configured in environment. Using in-memory / Firestore fallback.');
+    return null;
+  }
+
+  isConnecting = true;
+
   try {
-    let mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/bullionvault';
-    
-    try {
-      console.log(`Connecting to MongoDB at: ${mongoUri}`);
-      // Try to connect with a short selection timeout (3 seconds)
-      await mongoose.connect(mongoUri, { serverSelectionTimeoutMS: 3000 });
-      console.log(`MongoDB Connected successfully to local database.`);
-    } catch (localError) {
-      console.warn(`Local MongoDB connection failed (${localError.message}).`);
-      console.log('Initiating fallback to In-Memory MongoDB Server...');
-      
-      const { MongoMemoryServer } = require('mongodb-memory-server');
-      const mongod = await MongoMemoryServer.create();
-      mongoUri = mongod.getUri();
-      
-      console.log(`In-Memory MongoDB Server running at: ${mongoUri}`);
-      await mongoose.connect(mongoUri);
-      console.log('MongoDB Connected to In-Memory Database.');
-      
-      // Store the server instance globally to handle clean shutdown
-      global.__MONGOD__ = mongod;
-    }
-  } catch (error) {
-    console.error(`Database connection error: ${error.message}`);
-    process.exit(1);
+    // Attempt standard connection with 2-second timeout to avoid serverless latency
+    await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 2000,
+      connectTimeoutMS: 2000
+    });
+    console.log('MongoDB connected successfully.');
+    return mongoose.connection;
+  } catch (err) {
+    console.warn('MongoDB connection notice (operating with resilient fallback):', err.message);
+    return null;
+  } finally {
+    isConnecting = false;
   }
 };
 

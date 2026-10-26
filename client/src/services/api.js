@@ -67,12 +67,12 @@ export const FALLBACK_COMMODITIES = [
 ];
 
 export const FALLBACK_MARKET_OVERVIEW = [
-  { code: 'gold', name: 'Gold 24K', price: 7250, latestPrice: 7250, unit: '24K (10g)', quarter: 'Q2 2026', qoqChange: 180, qoqChangePercent: 2.55, trend: 'Upward', sparkline: [7000, 7050, 7120, 7180, 7220, 7250] },
-  { code: 'silver', name: 'Silver 999', price: 88.5, latestPrice: 88.5, unit: '999 (10g)', quarter: 'Q2 2026', qoqChange: 3.2, qoqChangePercent: 3.75, trend: 'Upward', sparkline: [82, 84, 85, 86, 87, 88.5] },
-  { code: 'platinum', name: 'Platinum 999', price: 3120, latestPrice: 3120, unit: '999 (10g)', quarter: 'Q2 2026', qoqChange: -45, qoqChangePercent: -1.42, trend: 'Downward', sparkline: [3200, 3180, 3170, 3150, 3140, 3120] },
-  { code: 'copper', name: 'Copper Cathode', price: 760, latestPrice: 760, unit: 'Standard Grade (1kg)', quarter: 'Q2 2026', qoqChange: 25, qoqChangePercent: 3.40, trend: 'Upward', sparkline: [730, 735, 740, 745, 755, 760] },
-  { code: 'crudeoil', name: 'Crude Oil (Brent)', price: 6450, latestPrice: 6450, unit: 'Brent Blend (bbl)', quarter: 'Q2 2026', qoqChange: -120, qoqChangePercent: -1.82, trend: 'Downward', sparkline: [6600, 6580, 6520, 6500, 6480, 6450] },
-  { code: 'naturalgas', name: 'Natural Gas', price: 275, latestPrice: 275, unit: 'Pipeline Quality (mmbtu)', quarter: 'Q2 2026', qoqChange: 15, qoqChangePercent: 5.76, trend: 'Upward', sparkline: [255, 260, 265, 268, 272, 275] }
+  { code: 'gold', name: 'Gold 24K', price: 122895, latestPrice: 122895, unit: '24K (10g)', quarter: 'Live', qoqChange: 896, qoqChangePercent: 0.74, trend: 'Upward', sparkline: [120000, 121000, 121500, 122000, 122500, 122895] },
+  { code: 'silver', name: 'Silver 999', price: 1655, latestPrice: 1655, unit: '999 (10g)', quarter: 'Live', qoqChange: 10.9, qoqChangePercent: 0.66, trend: 'Upward', sparkline: [1600, 1615, 1625, 1638, 1645, 1655] },
+  { code: 'platinum', name: 'Platinum 999', price: 47044, latestPrice: 47044, unit: '999 (10g)', quarter: 'Live', qoqChange: -320, qoqChangePercent: -0.68, trend: 'Downward', sparkline: [47800, 47600, 47400, 47250, 47100, 47044] },
+  { code: 'copper', name: 'Copper Cathode', price: 1365, latestPrice: 1365, unit: 'Standard Grade (1kg)', quarter: 'Live', qoqChange: 4.0, qoqChangePercent: 0.29, trend: 'Upward', sparkline: [1340, 1345, 1350, 1354, 1358, 1365] },
+  { code: 'crudeoil', name: 'Crude Oil (Brent)', price: 6450, latestPrice: 6450, unit: 'Brent Blend (bbl)', quarter: 'Live', qoqChange: -120, qoqChangePercent: -1.82, trend: 'Downward', sparkline: [6600, 6580, 6520, 6500, 6480, 6450] },
+  { code: 'naturalgas', name: 'Natural Gas', price: 275, latestPrice: 275, unit: 'Pipeline Quality (mmbtu)', quarter: 'Live', qoqChange: 15, qoqChangePercent: 5.76, trend: 'Upward', sparkline: [255, 260, 265, 268, 272, 275] }
 ];
 
 // Commodity & Markets Services

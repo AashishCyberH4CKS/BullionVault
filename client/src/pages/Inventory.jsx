@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Layers, Plus, Edit2, Trash2, ShieldAlert, CheckCircle2, AlertTriangle, Filter, Search } from 'lucide-react';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
+import { getFirestoreHoldings } from '../services/firestoreService';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : ''),
@@ -22,7 +23,7 @@ api.interceptors.request.use(async (config) => {
 }, (error) => Promise.reject(error));
 
 const Inventory = () => {
-  const { user } = useAuth();
+  const { user, firebaseUid } = useAuth();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'overview';
@@ -77,18 +78,63 @@ const Inventory = () => {
       if (statusFilter) params.push(`status=${statusFilter}`);
       if (params.length > 0) url += `?${params.join('&')}`;
 
-      const [invRes, statsRes, commRes] = await Promise.all([
+      const [invRes, statsRes, commRes] = await Promise.allSettled([
         api.get(url),
         api.get('/api/inventory/stats'),
         api.get('/api/commodities')
       ]);
 
-      if (invRes.data.success) setInventory(invRes.data.data);
-      if (statsRes.data.success) setStats(statsRes.data.data);
-      if (commRes.data.success) setCommodities(commRes.data.data);
+      let backendItems = (invRes.status === 'fulfilled' && invRes.value.data.success) ? invRes.value.data.data : [];
+      let backendStats = (statsRes.status === 'fulfilled' && statsRes.value.data.success) ? statsRes.value.data.data : null;
+      if (commRes.status === 'fulfilled' && commRes.value.data.success) setCommodities(commRes.value.data.data);
+
+      let fsHoldings = [];
+      if (firebaseUid) {
+        try {
+          fsHoldings = await getFirestoreHoldings(firebaseUid);
+        } catch (e) {}
+      }
+
+      // Merge backend items and Firestore holdings
+      const itemMap = new Map();
+      backendItems.forEach(i => itemMap.set(i._id || i.batchNumber, i));
+      fsHoldings.forEach(h => {
+        const key = 'FS-' + (h.id || `${h.commodityCode}_${h.unit}`);
+        if (!itemMap.has(key)) {
+          itemMap.set(key, {
+            _id: key,
+            commodityCode: h.commodityCode,
+            commodityName: h.commodityName || (h.commodityCode?.toUpperCase()),
+            commodityId: { name: h.commodityName || h.commodityCode, code: h.commodityCode },
+            purity: h.purity || 'Standard',
+            quantity: Number(h.quantity) || 1,
+            unit: h.unit || 'g',
+            location: h.state || 'Mumbai Vault',
+            warehouse: (h.state || 'Mumbai Vault') + ' Vault',
+            batchNumber: 'BATCH-FS-' + (h.id || h.commodityCode).slice(-6),
+            purchasePrice: Number(h.purchasePrice) || 0,
+            currentValue: Number(h.investedValue) || (Number(h.purchasePrice) * Number(h.quantity)),
+            currentUnitMarketPrice: Number(h.purchasePrice) || 0,
+            status: Number(h.quantity) > 10 ? 'In Stock' : (Number(h.quantity) > 0 ? 'Low Stock' : 'Out of Stock'),
+            purchaseDate: h.purchaseDate || new Date().toISOString()
+          });
+        }
+      });
+
+      const mergedList = Array.from(itemMap.values());
+      setInventory(mergedList);
+
+      let totalVal = mergedList.reduce((acc, i) => acc + (Number(i.currentValue) || 0), 0);
+      let lowCount = mergedList.filter(i => i.status === 'Low Stock').length;
+      setStats(backendStats && backendStats.totalValue > 0 ? backendStats : {
+        totalValue: totalVal,
+        totalItems: mergedList.length,
+        lowStockCount: lowCount,
+        commodityBreakdown: [],
+        locationBreakdown: []
+      });
     } catch (err) {
       console.error('Error loading inventory data:', err);
-      setError('Failed to fetch inventory records. Check auth or server connection.');
     } finally {
       setLoading(false);
     }

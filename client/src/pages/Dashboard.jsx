@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../hooks/useTheme';
 import { useAuth } from '../context/AuthContext';
-import { getFirestoreTransactions } from '../services/firestoreService';
+import { 
+  getFirestoreTransactions, 
+  getFirestoreHoldings, 
+  calculateFirestorePortfolioStats 
+} from '../services/firestoreService';
 import { 
   TrendingUp, 
   Briefcase, 
@@ -59,23 +63,45 @@ const Dashboard = () => {
         api.get('/api/commodities/market/overview')
       ]);
 
-      if (portRes.status === 'fulfilled' && portRes.value.data.success) setPortfolioStats(portRes.value.data.data);
-      if (invRes.status === 'fulfilled' && invRes.value.data.success) setInventoryStats(invRes.value.data.data);
+      let pStats = (portRes.status === 'fulfilled' && portRes.value.data.success) ? portRes.value.data.data : null;
+      let iStats = (invRes.status === 'fulfilled' && invRes.value.data.success) ? invRes.value.data.data : null;
       
       let backendTxs = [];
       if (txRes.status === 'fulfilled' && txRes.value.data.success) backendTxs = txRes.value.data.data;
       if (alertRes.status === 'fulfilled' && alertRes.value.data.success) setAlerts(alertRes.value.data.data);
       if (marketRes.status === 'fulfilled' && marketRes.value.data.success) setMarketOverview(marketRes.value.data.data);
 
-      // Load Firestore transactions
+      // Load Firestore transactions & holdings
       let fsTxs = [];
+      let fsHoldings = [];
       if (firebaseUid) {
         try {
-          fsTxs = await getFirestoreTransactions(firebaseUid);
+          [fsTxs, fsHoldings] = await Promise.all([
+            getFirestoreTransactions(firebaseUid).catch(() => []),
+            getFirestoreHoldings(firebaseUid).catch(() => [])
+          ]);
         } catch (e) {}
       }
 
-      // Merge and deduplicate
+      // If portfolio stats missing from backend, calculate directly from Firestore holdings
+      if ((!pStats || !pStats.totalValue) && fsHoldings.length > 0) {
+        pStats = calculateFirestorePortfolioStats(fsHoldings);
+      }
+      setPortfolioStats(pStats);
+
+      // If inventory stats missing from backend, derive from holdings
+      if ((!iStats || !iStats.totalValue) && fsHoldings.length > 0) {
+        const totalVal = fsHoldings.reduce((acc, h) => acc + (Number(h.investedValue) || 0), 0);
+        iStats = {
+          totalValue: totalVal,
+          totalItems: fsHoldings.length,
+          lowStockCount: fsHoldings.filter(h => Number(h.quantity) <= 5).length,
+          commodityBreakdown: fsHoldings.map(h => ({ _id: h.commodityCode, totalValue: h.investedValue, totalQuantity: h.quantity }))
+        };
+      }
+      setInventoryStats(iStats);
+
+      // Merge and deduplicate transactions
       const txMap = new Map();
       fsTxs.forEach(t => txMap.set(t.transactionId || t.id, t));
       backendTxs.forEach(t => {

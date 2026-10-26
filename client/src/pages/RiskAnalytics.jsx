@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { ShieldAlert, BarChart3, BrainCircuit, RefreshCw, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { 
+  getFirestoreHoldings, 
+  calculateFirestorePortfolioStats, 
+  getFirestoreTransactions 
+} from '../services/firestoreService';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : ''),
@@ -19,6 +25,7 @@ api.interceptors.request.use(async (config) => {
 }, (error) => Promise.reject(error));
 
 const RiskAnalytics = () => {
+  const { firebaseUid } = useAuth();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'dashboard';
@@ -43,18 +50,68 @@ const RiskAnalytics = () => {
       setLoading(true);
       setError(null);
 
-      const [portRes, invRes, txRes] = await Promise.all([
+      const [portRes, invRes, txRes] = await Promise.allSettled([
         api.get('/api/portfolio/stats'),
         api.get('/api/inventory/stats'),
         api.get('/api/transactions/stats')
       ]);
 
-      if (portRes.data.success) setPortfolioStats(portRes.data.data);
-      if (invRes.data.success) setInventoryStats(invRes.data.data);
-      if (txRes.data.success) setTxStats(txRes.data.data);
+      let pStats = (portRes.status === 'fulfilled' && portRes.value.data.success) ? portRes.value.data.data : null;
+      let iStats = (invRes.status === 'fulfilled' && invRes.value.data.success) ? invRes.value.data.data : null;
+      let tStats = (txRes.status === 'fulfilled' && txRes.value.data.success) ? txRes.value.data.data : null;
+
+      // Firestore fallback if backend responses are empty or missing
+      if (firebaseUid) {
+        try {
+          const [fsHoldings, fsTxs] = await Promise.all([
+            getFirestoreHoldings(firebaseUid).catch(() => []),
+            getFirestoreTransactions(firebaseUid).catch(() => [])
+          ]);
+
+          if ((!pStats || !pStats.totalValue) && fsHoldings.length > 0) {
+            pStats = calculateFirestorePortfolioStats(fsHoldings);
+          }
+
+          if ((!iStats || !iStats.totalValue) && fsHoldings.length > 0) {
+            const totalVal = fsHoldings.reduce((acc, h) => acc + (Number(h.investedValue) || 0), 0);
+            iStats = {
+              totalValue: totalVal,
+              totalItems: fsHoldings.length,
+              lowStockCount: fsHoldings.filter(h => Number(h.quantity) <= 5).length,
+              commodityBreakdown: fsHoldings.map(h => ({ _id: h.commodityCode, totalValue: h.investedValue, totalQuantity: h.quantity }))
+            };
+          }
+
+          if ((!tStats || (!tStats.totalPurchases && !tStats.totalSales)) && fsTxs.length > 0) {
+            let totalP = 0, totalS = 0, pCount = 0, sCount = 0;
+            fsTxs.forEach(t => {
+              if (t.type === 'purchase') {
+                totalP += (Number(t.totalValue) || 0);
+                pCount++;
+              } else {
+                totalS += (Number(t.totalValue) || 0);
+                sCount++;
+              }
+            });
+            tStats = {
+              totalPurchases: totalP,
+              totalSales: totalS,
+              purchaseCount: pCount,
+              salesCount: sCount,
+              netProfit: totalS - totalP,
+              monthlyTrends: []
+            };
+          }
+        } catch (fsErr) {
+          console.warn('RiskAnalytics Firestore fallback notice:', fsErr.message);
+        }
+      }
+
+      setPortfolioStats(pStats || { totalValue: 0, totalInvested: 0, totalProfit: 0, roi: 0, allocations: [] });
+      setInventoryStats(iStats || { totalValue: 0, totalItems: 0, lowStockCount: 0, commodityBreakdown: [] });
+      setTxStats(tStats || { totalPurchases: 0, totalSales: 0, purchaseCount: 0, salesCount: 0, netProfit: 0 });
     } catch (err) {
       console.error('Error fetching analytics statistics:', err);
-      setError('Failed to query portfolio, inventory, or transactional risk indexes. Is backend running?');
     } finally {
       setLoading(false);
     }

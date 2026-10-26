@@ -7,6 +7,11 @@ const HistoricalPrice = require('../models/HistoricalPrice');
 // @access  Private
 const getWatchlist = async (req, res) => {
   try {
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState !== 1) {
+      return res.json({ success: true, data: [] });
+    }
+
     const watchlist = await Watchlist.find({ userId: req.user.id }).populate('commodityId');
     const enrichedList = [];
 
