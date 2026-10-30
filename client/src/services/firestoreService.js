@@ -157,8 +157,11 @@ export const saveFirestoreTransaction = async (userId, txData) => {
       updatedAt: serverTimestamp()
     });
     docId = docRef.id;
+    payload._firestoreSaved = true;
   } catch (fsErr) {
-    console.warn('Firestore write notice (saving to local persistence):', fsErr.message);
+    payload._firestoreSaved = false;
+    payload._firestoreError = fsErr.message;
+    console.warn('Firestore direct write notice (saving to local backup):', fsErr.message);
   }
 
   const finalRecord = { _id: docId, id: docId, ...payload };

@@ -10,7 +10,13 @@ try {
   let privateKey = process.env.FIREBASE_PRIVATE_KEY;
 
   if (privateKey) {
+    if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+      privateKey = privateKey.slice(1, -1);
+    }
     privateKey = privateKey.replace(/\\n/g, '\n');
+    if (!privateKey.includes('-----END PRIVATE KEY-----')) {
+      privateKey = privateKey.trim() + '\n-----END PRIVATE KEY-----\n';
+    }
   }
 
   if (clientEmail && privateKey) {

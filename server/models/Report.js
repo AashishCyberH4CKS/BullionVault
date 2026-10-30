@@ -20,6 +20,8 @@ const reportSchema = new mongoose.Schema({
   type: {
     type: String,
     enum: [
+      'single_transaction',
+      'company_ledger',
       'portfolio',
       'portfolio_valuation',
       'investment',
@@ -46,6 +48,9 @@ const reportSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.Mixed,
   },
   fileUrl: {
+    type: String,
+  },
+  htmlContent: {
     type: String,
   },
 }, {

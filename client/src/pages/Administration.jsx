@@ -1,22 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { Sliders, Users, Building, ShieldCheck, History, Edit, Check, X, Search } from 'lucide-react';
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : ''),
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
-
-api.interceptors.request.use(async (config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
 
 const Administration = () => {
   const location = useLocation();

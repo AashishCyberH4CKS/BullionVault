@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { useLocation, useNavigate } from 'react-router-dom';
+import api from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { 
   Receipt, 
@@ -18,7 +18,9 @@ import {
   ShieldCheck,
   Flame,
   Activity,
-  Sparkles
+  Sparkles,
+  Printer,
+  FileText
 } from 'lucide-react';
 import DeleteConfirmModal from '../components/DeleteConfirmModal';
 import { 
@@ -33,29 +35,7 @@ import {
 import { doc, setDoc, getDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:5000' : ''),
-  headers: {
-    'Content-Type': 'application/json',
-  }
-});
 
-api.interceptors.request.use(async (config) => {
-  let token = localStorage.getItem('token');
-  if (window.Clerk?.session) {
-    try {
-      const freshToken = await window.Clerk.session.getToken();
-      if (freshToken) {
-        token = freshToken;
-        localStorage.setItem('token', freshToken);
-      }
-    } catch (e) {}
-  }
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
 
 // Standard 6 Supported Commodities fallback list
 const DEFAULT_COMMODITIES = [
@@ -70,6 +50,7 @@ const DEFAULT_COMMODITIES = [
 const Transactions = () => {
   const { user, firebaseUid } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   const initialTab = queryParams.get('tab') || 'purchases';
 
@@ -721,7 +702,14 @@ const Transactions = () => {
                       </td>
                       {(canEditTx || canDeleteTx) && (
                         <td className="p-4">
-                          <div className="flex items-center justify-center space-x-2">
+                          <div className="flex items-center justify-center space-x-1.5">
+                            <button
+                              onClick={() => navigate(`/reports?type=single_transaction&txId=${tx.transactionId || tx.id}&company=${encodeURIComponent(tx.counterparty || '')}`)}
+                              className="p-1.5 text-accent hover:text-white hover:bg-accent/20 rounded-lg transition-colors cursor-pointer"
+                              title="Generate Official Audit Certificate"
+                            >
+                              <Printer size={13} />
+                            </button>
                             {canEditTx && (
                               <button
                                 onClick={() => handleOpenEditModal(tx)}
